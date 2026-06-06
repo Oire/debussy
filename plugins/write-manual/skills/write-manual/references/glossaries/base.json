@@ -1,0 +1,54 @@
+{
+  "rules": [
+    {
+      "term": "ExampleApp",
+      "rule": "never-translate",
+      "details": "Product name, always written as ExampleApp in Latin script regardless of language"
+    },
+    {
+      "term": "Example Co.",
+      "rule": "never-translate",
+      "details": "Company name, always written as Example Co. in Latin script"
+    },
+    {
+      "term": "Braille",
+      "rule": "always-capitalize",
+      "details": "Named after Louis Braille, always capitalized in all languages"
+    },
+    {
+      "term": "Windows",
+      "rule": "never-translate",
+      "details": "Microsoft Windows operating system name"
+    },
+    {
+      "term": "SQLite",
+      "rule": "never-translate",
+      "details": "Database engine name, always written as SQLite"
+    },
+    {
+      "term": "JAWS",
+      "rule": "never-translate",
+      "details": "Screen reader product name (Job Access With Speech), always uppercase"
+    },
+    {
+      "term": "NVDA",
+      "rule": "never-translate",
+      "details": "Screen reader product name (NonVisual Desktop Access), always uppercase"
+    },
+    {
+      "term": "Opus",
+      "rule": "never-translate",
+      "details": "Audio codec name, always written as Opus"
+    },
+    {
+      "term": "USB",
+      "rule": "never-translate",
+      "details": "Universal Serial Bus, always uppercase"
+    },
+    {
+      "term": "DPAPI",
+      "rule": "never-translate",
+      "details": "Windows Data Protection API, always uppercase"
+    }
+  ]
+}

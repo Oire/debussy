@@ -1,0 +1,13 @@
+{
+  "name": "write-manual",
+  "version": "0.1.0",
+  "description": "Multi-agent pipeline that writes comprehensive, accessible, WCAG 2.2 AA user manuals for desktop applications: Haiku scouts extract facts from code, Sonnet synthesizes research, Opus writes the manual, Sonnet verifies accuracy and accessibility, Sonnet translates to target languages.",
+  "author": {
+    "name": "André Polykanine",
+    "email": "ap@oire.me"
+  },
+  "homepage": "https://github.com/Oire/debussy",
+  "repository": "https://github.com/Oire/debussy",
+  "license": "Apache-2.0",
+  "keywords": ["documentation", "user-manual", "accessibility", "wcag", "i18n"]
+}

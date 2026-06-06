@@ -1,0 +1,123 @@
+{
+  "language": "en",
+  "languageName": "English",
+  "nativeName": "English",
+  "direction": "ltr",
+  "keys": {},
+  "terms": [
+    {
+      "term": "system tray",
+      "translation": "system tray",
+      "context": "Windows notification area where app icons appear",
+      "notes": "Use 'system tray' consistently, not 'notification area' or 'taskbar'"
+    },
+    {
+      "term": "note",
+      "translation": "note",
+      "context": "A single piece of content the user creates",
+      "notes": "Lowercase unless starting a sentence. Never 'memo', 'entry', or 'item'"
+    },
+    {
+      "term": "category",
+      "translation": "category",
+      "context": "An organizational group for notes",
+      "notes": "Never 'folder', 'group', or 'tag'"
+    },
+    {
+      "term": "subcategory",
+      "translation": "subcategory",
+      "context": "A category nested inside another category (Tree mode)",
+      "notes": "One word, no hyphen. Never 'sub-category' or 'child category'"
+    },
+    {
+      "term": "trash",
+      "translation": "trash",
+      "context": "Where deleted notes go before permanent deletion",
+      "notes": "Never 'recycle bin', 'bin', or 'deleted items' as a noun. 'Deleted items' is acceptable as a description ('view deleted items') but 'trash' is the container name"
+    },
+    {
+      "term": "preview panel",
+      "translation": "preview panel",
+      "context": "Right-side panel showing read-only note content",
+      "notes": "Always 'preview panel', never 'preview pane' or 'reading panel'"
+    },
+    {
+      "term": "note list",
+      "translation": "note list",
+      "context": "Center panel showing notes in the selected category",
+      "notes": "Always 'note list', never 'note table' or 'note grid'"
+    },
+    {
+      "term": "category panel",
+      "translation": "category panel",
+      "context": "Left-side panel showing categories",
+      "notes": "Always 'category panel', never 'category tree' (tree is a mode, not the panel name)"
+    },
+    {
+      "term": "quick note",
+      "translation": "quick note",
+      "context": "Lightweight note capture via global hotkey",
+      "notes": "Lowercase unless starting a sentence. Two words, never 'quicknote'"
+    },
+    {
+      "term": "note editor",
+      "translation": "note editor",
+      "context": "The dialog where you create or edit a note",
+      "notes": "Always 'note editor', never 'note dialog', 'edit window', or 'editor dialog'"
+    },
+    {
+      "term": "draft",
+      "translation": "draft",
+      "context": "Unsaved note content preserved between sessions",
+      "notes": "Never 'autosave', 'backup', or 'recovery copy'"
+    },
+    {
+      "term": "auto-save",
+      "translation": "auto-save",
+      "context": "Setting that saves notes automatically after a delay",
+      "notes": "Hyphenated. Never 'autosave' or 'auto save'"
+    },
+    {
+      "term": "portable mode",
+      "translation": "portable mode",
+      "context": "Running from a USB drive with data stored next to the executable",
+      "notes": "Always 'portable mode', never 'portable version' or 'USB mode'"
+    },
+    {
+      "term": "unsaved changes marker",
+      "translation": "unsaved changes marker",
+      "context": "Visual mark in the editor title bar showing the note has unsaved changes",
+      "notes": "Never 'dirty indicator', 'dirty flag', or 'modified marker'. The marker character itself must be verified from source code"
+    },
+    {
+      "term": "voice note",
+      "translation": "voice note",
+      "context": "An audio recording stored as a note",
+      "notes": "Two words. Never 'audio note', 'recording', or 'voice memo'"
+    },
+    {
+      "term": "global hotkey",
+      "translation": "global hotkey",
+      "context": "System-wide keyboard shortcut that works from any application",
+      "notes": "Always 'global hotkey', never 'system shortcut' or 'global shortcut'"
+    },
+    {
+      "term": "manual position",
+      "translation": "manual position",
+      "context": "User-defined sort order for notes",
+      "notes": "The sort mode where users arrange notes by hand. Never 'custom order' or 'manual order'"
+    },
+    {
+      "term": "Tree mode",
+      "translation": "Tree mode",
+      "context": "Category mode with hierarchical nesting",
+      "notes": "Capitalize 'Tree' when referring to the mode name. In running text: 'Tree mode', not 'tree mode' or 'Tree Mode'"
+    },
+    {
+      "term": "Flat mode",
+      "translation": "Flat mode",
+      "context": "Category mode with a simple non-hierarchical list",
+      "notes": "Capitalize 'Flat' when referring to the mode name"
+    }
+  ]
+}

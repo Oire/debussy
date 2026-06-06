@@ -1,0 +1,13 @@
+{
+  "name": "planning",
+  "version": "0.1.0",
+  "description": "Idea-to-execution planning pipeline: brainstorm a design, write a structured plan, review it, then execute it task by task in isolated subagents. Bundles the brainstorm skill, the plan-make command, the plan-review agent, and the plan-exec skill, which all share the docs/plans/ convention.",
+  "author": {
+    "name": "André Polykanine",
+    "email": "ap@oire.me"
+  },
+  "homepage": "https://github.com/Oire/debussy",
+  "repository": "https://github.com/Oire/debussy",
+  "license": "Apache-2.0",
+  "keywords": ["planning", "brainstorm", "implementation-plan", "subagents"]
+}

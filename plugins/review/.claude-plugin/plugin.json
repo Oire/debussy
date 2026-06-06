@@ -1,0 +1,13 @@
+{
+  "name": "review",
+  "version": "0.1.0",
+  "description": "Project review and release-readiness auditing. Bundles Nigel (the project-analyst agent) and the project-audit skill, which pairs Nigel's holistic polish/DX/accessibility review with an external Codex code-level review. The skill invokes the agent, so they ship together.",
+  "author": {
+    "name": "André Polykanine",
+    "email": "ap@oire.me"
+  },
+  "homepage": "https://github.com/Oire/debussy",
+  "repository": "https://github.com/Oire/debussy",
+  "license": "Apache-2.0",
+  "keywords": ["review", "audit", "release-readiness", "accessibility", "polish"]
+}

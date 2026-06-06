@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "base-glossary.schema.json",
+  "title": "Base Glossary",
+  "description": "Language-agnostic glossary rules that apply across all translations. Contains terms that must never be translated, universal capitalization rules, and brand names.",
+  "type": "object",
+  "required": ["rules"],
+  "additionalProperties": false,
+  "properties": {
+    "rules": {
+      "type": "array",
+      "description": "Universal term rules applied before any language-specific glossary.",
+      "items": {
+        "$ref": "#/$defs/rule"
+      }
+    }
+  },
+  "$defs": {
+    "rule": {
+      "type": "object",
+      "required": ["term", "rule"],
+      "additionalProperties": false,
+      "properties": {
+        "term": {
+          "type": "string",
+          "description": "The term this rule applies to (e.g. \"Braille\", \"ExampleApp\", \"Example Co.\")"
+        },
+        "rule": {
+          "type": "string",
+          "enum": ["never-translate", "always-capitalize", "custom"],
+          "description": "The type of rule: never-translate (keep original in all languages), always-capitalize (capitalize in all languages), custom (see details field)"
+        },
+        "details": {
+          "type": "string",
+          "description": "Human-readable explanation of the rule, required when rule is \"custom\", optional otherwise"
+        }
+      },
+      "if": {
+        "properties": { "rule": { "const": "custom" } }
+      },
+      "then": {
+        "required": ["term", "rule", "details"]
+      }
+    }
+  }
+}
