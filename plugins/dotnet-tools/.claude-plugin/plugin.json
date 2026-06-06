@@ -1,7 +1,7 @@
 {
   "name": "dotnet-tools",
   "version": "0.1.0",
-  "description": "Oire .NET tooling for Claude Code. Currently bundles the dotnet-style-corrector agent, which checks C# against Oire coding standards and .editorconfig. Packaged as a plugin so it can be installed only in .NET projects, separately from the general-purpose debussy artifacts.",
+  "description": "Oire .NET tooling for Claude Code. Currently bundles the dotnet-style-corrector agent, which checks C# against Oire coding standards and .editorconfig. Packaged as a plugin so it can be installed only in .NET projects, separately from the general-purpose Debussy artifacts.",
   "author": {
     "name": "André Polykanine",
     "email": "ap@oire.me"

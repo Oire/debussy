@@ -1,7 +1,7 @@
 # conventions (plugin)
 
-The author's coding conventions, enforced as `PreToolUse` hooks. These are
-**personal policy**, not universal truths, so they live behind an explicit
+Oire coding conventions, enforced as `PreToolUse` hooks. These are
+**organization policy**, not universal truths, so they live behind an explicit
 opt-in: enable this plugin only if you want them.
 
 ## What it enforces

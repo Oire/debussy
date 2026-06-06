@@ -1,11 +1,11 @@
 {
-  "name": "debussy",
+  "name": "Debussy",
   "owner": {
     "name": "André Polykanine",
     "email": "ap@oire.me"
   },
   "metadata": {
-    "description": "André's Claude Code customizations — planning, review, documentation, .NET tooling, and opt-in coding-convention hooks.",
+    "description": "Oire Claude Code customizations — planning, review, documentation, .NET tooling, and opt-in coding-convention hooks.",
     "version": "0.1.0"
   },
   "plugins": [
@@ -17,7 +17,7 @@
     {
       "name": "review",
       "source": "./plugins/review",
-      "description": "Project review and release-readiness auditing (Nigel + Codex)."
+      "description": "Project review and release-readiness auditing."
     },
     {
       "name": "write-manual",
