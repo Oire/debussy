@@ -1,0 +1,45 @@
+debussy
+Copyright 2026 André Polykanine (Oire)
+
+This product is licensed under the Apache License, Version 2.0 (see LICENSE),
+with the exception noted below.
+
+================================================================================
+Third-party material
+================================================================================
+
+The "planning" plugin (plugins/planning/ — the brainstorm and plan-exec skills,
+the plan-make command, the plan-review agent, and their bundled scripts and
+reference prompts) is adapted from cc-thingz by Umputun:
+
+    https://github.com/umputun/cc-thingz
+
+cc-thingz is distributed under the MIT License. The MIT and Apache-2.0 licenses
+are compatible, so debussy is distributed as a whole under Apache-2.0; the
+original MIT copyright and permission notice for the adapted material is
+retained below, as the MIT License requires. debussy's adaptations diverge from
+upstream (simplified flows, different naming, packaging changes).
+
+--------------------------------------------------------------------------------
+MIT License
+
+Copyright (c) 2026 Umputun
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+--------------------------------------------------------------------------------

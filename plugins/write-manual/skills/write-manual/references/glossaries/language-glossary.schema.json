@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "language-glossary.schema.json",
+  "title": "Language Glossary",
+  "description": "Per-language glossary for manual translation. Contains localized key names and term translations with notes.",
+  "type": "object",
+  "required": ["language", "languageName", "nativeName", "direction", "keys", "terms"],
+  "additionalProperties": false,
+  "properties": {
+    "language": {
+      "type": "string",
+      "description": "BCP 47 language tag (e.g. \"ru\", \"de\", \"fr\", \"he\", \"uk\")",
+      "pattern": "^[a-z]{2,3}(-[A-Z][a-z]{3})?(-[A-Z]{2})?$"
+    },
+    "languageName": {
+      "type": "string",
+      "description": "Language name in American English (e.g. \"Russian\", \"German\")"
+    },
+    "nativeName": {
+      "type": "string",
+      "description": "Language name in the language itself (e.g. \"Русский\", \"Deutsch\", \"עברית\")"
+    },
+    "direction": {
+      "type": "string",
+      "enum": ["ltr", "rtl"],
+      "description": "Text direction for this language"
+    },
+    "keys": {
+      "type": "object",
+      "description": "Mapping of standard key names to their localized equivalents. Keys are the canonical English name, values are the localized name. Only include keys that differ from English; unlisted keys keep their English name.",
+      "propertyNames": {
+        "type": "string"
+      },
+      "additionalProperties": {
+        "type": "string"
+      },
+      "examples": [
+        {
+          "Ctrl": "Strg",
+          "Delete": "Entf"
+        },
+        {
+          "Shift": "Maj"
+        }
+      ]
+    },
+    "terms": {
+      "type": "array",
+      "description": "Glossary entries for consistent translation of product-specific and technical terms.",
+      "items": {
+        "$ref": "#/$defs/term"
+      }
+    }
+  },
+  "$defs": {
+    "term": {
+      "type": "object",
+      "required": ["term", "translation"],
+      "additionalProperties": false,
+      "properties": {
+        "term": {
+          "type": "string",
+          "description": "The term in American English as it appears in the English manual"
+        },
+        "translation": {
+          "type": "string",
+          "description": "The exact translation to use in this language. Must include proper diacritics, never ASCII approximations."
+        },
+        "context": {
+          "type": "string",
+          "description": "Where this term appears or what it refers to, to disambiguate (e.g. \"menu item\" vs \"general concept\")"
+        },
+        "notes": {
+          "type": "string",
+          "description": "Why this specific translation was chosen, alternatives rejected, or usage constraints"
+        }
+      }
+    }
+  }
+}

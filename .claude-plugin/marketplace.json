@@ -1,0 +1,38 @@
+{
+  "name": "debussy",
+  "owner": {
+    "name": "André Polykanine",
+    "email": "ap@oire.me"
+  },
+  "metadata": {
+    "description": "André's Claude Code customizations — planning, review, documentation, .NET tooling, and opt-in coding-convention hooks.",
+    "version": "0.1.0"
+  },
+  "plugins": [
+    {
+      "name": "planning",
+      "source": "./plugins/planning",
+      "description": "Idea-to-execution pipeline: brainstorm, plan-make, plan-review, plan-exec."
+    },
+    {
+      "name": "review",
+      "source": "./plugins/review",
+      "description": "Project review and release-readiness auditing (Nigel + Codex)."
+    },
+    {
+      "name": "write-manual",
+      "source": "./plugins/write-manual",
+      "description": "Multi-agent pipeline for accessible, WCAG 2.2 AA desktop-app user manuals."
+    },
+    {
+      "name": "dotnet-tools",
+      "source": "./plugins/dotnet-tools",
+      "description": "Oire .NET coding-standards style corrector."
+    },
+    {
+      "name": "conventions",
+      "source": "./plugins/conventions",
+      "description": "Opt-in convention hooks: American English and no Claude-side git writes."
+    }
+  ]
+}

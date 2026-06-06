@@ -1,0 +1,71 @@
+name: CI
+
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate YAML frontmatter in markdown
+        run: |
+          python3 -c "
+          import yaml, sys, os
+          failed = False
+          for root, _dirs, files in os.walk('.'):
+              if '.git' in root:
+                  continue
+              for f in files:
+                  if not f.endswith('.md'):
+                      continue
+                  path = os.path.join(root, f)
+                  with open(path, encoding='utf-8') as fh:
+                      content = fh.read()
+                  if not content.startswith('---\n'):
+                      continue
+                  end = content.find('\n---\n', 4)
+                  if end == -1:
+                      continue
+                  try:
+                      yaml.safe_load(content[4:end])
+                  except yaml.YAMLError as e:
+                      print(f'FAIL: {path}\n  {e}')
+                      failed = True
+          sys.exit(1 if failed else 0)
+          print('All markdown frontmatter is valid YAML')
+          "
+
+      - name: Validate JSON manifests
+        run: |
+          python3 -c "
+          import json, sys, glob
+          patterns = ['.claude-plugin/marketplace.json',
+                      'plugins/*/.claude-plugin/plugin.json',
+                      'plugins/*/hooks/hooks.json',
+                      'settings/*.json']
+          failed = False
+          for pat in patterns:
+              for path in glob.glob(pat):
+                  try:
+                      json.load(open(path, encoding='utf-8'))
+                      print('ok:', path)
+                  except Exception as e:
+                      print('FAIL:', path, e); failed = True
+          sys.exit(1 if failed else 0)
+          "
+
+      - name: ShellCheck
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq shellcheck
+          find . -name '*.sh' -not -path './.git/*' -print0 | xargs -0 shellcheck
+
+      - name: Run hook tests
+        run: |
+          for t in tests/test-*.sh; do
+            echo "== $t =="
+            bash "$t"
+          done

@@ -1,0 +1,13 @@
+{
+  "name": "conventions",
+  "version": "0.1.0",
+  "description": "Opt-in coding conventions enforced as PreToolUse hooks: American English everywhere, and no Claude-side git writes (no commit/stage, no git mv/rm). Also ships a Windows-only no-null-redirect hook (not auto-wired, since it must not run on Unix). Enable this plugin to adopt the author's conventions; the rules are personal policy, so they live behind an explicit opt-in.",
+  "author": {
+    "name": "André Polykanine",
+    "email": "ap@oire.me"
+  },
+  "homepage": "https://github.com/Oire/debussy",
+  "repository": "https://github.com/Oire/debussy",
+  "license": "Apache-2.0",
+  "keywords": ["hooks", "conventions", "linting", "american-english", "git-guard"]
+}

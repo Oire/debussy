@@ -1,0 +1,17 @@
+# OS / editor cruft
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*~
+.idea/
+.vscode/
+
+# Windows null-device files (the very thing check-no-null-redirect prevents,
+# committed here as a belt-and-braces guard in case one slips through)
+nul
+**/nul
+
+# Local-only Claude Code state that must never be committed from this repo
+.credentials.json
+settings.local.json
