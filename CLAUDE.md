@@ -4,7 +4,7 @@ Guidance for Claude Code working inside the **debussy** repo.
 
 ## What this repo is
 
-A Claude Code **plugin marketplace** and the source of truth for André's Claude
+A Claude Code **plugin marketplace** and the source of truth for the Oire Claude
 Code customizations. Features ship as plugins under `plugins/`, listed in
 `.claude-plugin/marketplace.json`. The convention hooks also have a manual
 install path (file copy into `~/.claude/hooks` + `settings.json` wiring) for
@@ -30,8 +30,8 @@ plugin.
 
 ## Conventions this repo enforces (on itself)
 
-The convention hooks are active on the author's machine, so this repo obeys its
-own rules. Three will bite you while editing:
+debussy is developed with its own `conventions` plugin enabled, so this repo
+obeys its own rules. Three will bite you while editing:
 
 1. **American English everywhere** — the `check-american-english` hook blocks
    `Write`/`Edit` containing non-American spellings.

@@ -5,6 +5,29 @@ All notable changes to this repo are recorded here. Format loosely follows
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-07-12
+
+### Changed
+- **Positioning / docs:** reframed the marketplace as a public, general-purpose
+  set of plugins rather than one person's machine setup. The root `README` and
+  `CLAUDE.md` no longer describe debussy as customizations for a specific
+  machine, and the **conventions** plugin is now explicitly labeled *opinionated
+  Oire conventions* (organization policy, opt-in) to set it apart from the
+  everyone-friendly plugins (planning, review, write-manual, dotnet-tools).
+- **conventions hooks README:** documented a third wiring path — enable the
+  plugin for the cross-platform hooks and add only the Windows-only
+  `check-no-null-redirect` via a single `settings.json` entry that points at the
+  plugin's own shipped script, so it tracks marketplace auto-updates instead of
+  drifting from an `install.ps1` copy. Added a "don't double-wire" caution (the
+  plugin's `.sh` runners plus the PowerShell runners of the same hook fire
+  twice) and noted the plugin-storage-path trade-off. Verified the PowerShell
+  no-null-redirect wiring end to end on Windows 11 with Git Bash.
+
+### Notes
+- Marketplace version bumped to 0.3.0 (`marketplace.json` metadata). Individual
+  plugin versions are unchanged — no plugin behavior changed, only docs and
+  positioning.
+
 ## [0.2.0] - 2026-07-12
 
 ### Changed

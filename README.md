@@ -4,10 +4,10 @@
 
 Claude. Claude Debussy. 🎹
 
-A Claude Code **plugin marketplace** plus everything that customizes
-[Claude Code](https://claude.com/claude-code) on André's machines — packaged so
-both humans and Claude can navigate it, and so others can install the pieces
-they want.
+A Claude Code **plugin marketplace** from [Oire](https://oire.org): a small set
+of plugins for planning, review, documentation, and .NET work — plus an opt-in
+pack of opinionated Oire coding conventions. Packaged so both humans and Claude
+can navigate it, and so you can install just the pieces you want.
 
 ## What's inside
 
@@ -80,9 +80,10 @@ The idea-to-execution pipeline; the four components chain via the
 
 ### conventions (opt-in)
 
-Personal coding conventions enforced as `PreToolUse` hooks — opt in only if you
-want them. When the plugin is enabled, its `hooks.json` wires the two
-cross-platform hooks via `bash`; see
+**Opinionated Oire conventions** enforced as `PreToolUse` hooks — organization
+policy, not universal truths, so opt in only if you want them. (The other
+plugins make no such assumptions and are meant for everyone.) When the plugin is
+enabled, its `hooks.json` wires the two cross-platform hooks via `bash`; see
 [`plugins/conventions/README.md`](plugins/conventions/README.md) for the full
 story and the PowerShell/manual alternative.
 
@@ -115,14 +116,24 @@ instead:
 2. Merge the matching snippet from [`settings/`](settings) into your
    `~/.claude/settings.json` under `hooks.PreToolUse`, then restart Claude Code.
 
+**Windows + the plugin?** If you enable the `conventions` plugin for the
+cross-platform hooks and only need to add the Windows-only
+`check-no-null-redirect`, you don't have to copy anything: wire a single
+`settings.json` entry pointing straight at the plugin's own shipped script, so it
+tracks marketplace auto-updates instead of drifting from a copy. Just don't also
+wire the cross-platform PowerShell runners while the plugin is enabled, or
+`check-american-english` and `check-git-guard` will fire twice. Full recipe in
+[`plugins/conventions/hooks/README.md`](plugins/conventions/hooks/README.md).
+
 `sync.*` pulls in-place hook edits back into the repo; `uninstall.*` removes the
 copied hooks (by name — it never touches your other hooks).
 
 ## Conventions enforced here
 
-Because these hooks are active on the author's machine, the repo follows its own
-rules: **American English everywhere**, **no null-device redirects on Windows**,
-and **no Claude-side git commits/staging or `git mv`/`git rm`**. Documenting a
+debussy is developed with its own **conventions** plugin enabled, so the repo
+follows its own rules: **American English everywhere**, **no null-device
+redirects on Windows**, and **no Claude-side git commits/staging or
+`git mv`/`git rm`**. Documenting a
 spelling checker means occasionally describing non-American spellings without
 spelling them out — see the authoring notes in
 [`plugins/conventions/hooks/README.md`](plugins/conventions/hooks/README.md).

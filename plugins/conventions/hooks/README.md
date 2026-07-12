@@ -92,21 +92,25 @@ drop the redirection entirely.
 > files with the `Write` tool (this hook only matches `Bash|PowerShell`), or
 > close a descriptor with `2>&-` instead of redirecting to the null device.
 
-## Wiring — two ways
+## Wiring
 
-These hooks have two distribution paths (see the plugin
-[README](../README.md) for the full picture):
+These hooks reach your machine through a few paths (see the plugin
+[README](../README.md) for the overview); pick per hook.
 
-**1. As the `conventions` plugin (recommended for sharing).** When the plugin is
-enabled, [`hooks.json`](hooks.json) wires the two cross-platform hooks via
-`bash` + the `.sh` runners, located with `${CLAUDE_PLUGIN_ROOT}`. No
-`settings.json` edits needed. `check-no-null-redirect` is shipped but not
-auto-wired (Windows-only; a plugin `hooks.json` can't branch on OS).
+### 1. As the `conventions` plugin (recommended for the cross-platform hooks)
 
-**2. Manual `settings.json` wiring (for the PowerShell runners / personal
-always-on use).** Hooks do nothing until referenced in `settings.json` under
-`hooks.PreToolUse`. Ready-to-merge snippets live in the repo-root
-[`settings/`](../../../settings) directory:
+When the plugin is enabled, [`hooks.json`](hooks.json) wires the two
+cross-platform hooks via `bash` + the `.sh` runners, located with
+`${CLAUDE_PLUGIN_ROOT}`. No `settings.json` edits, and marketplace auto-update
+keeps them current. `check-no-null-redirect` is shipped but not auto-wired
+(Windows-only; a plugin `hooks.json` can't branch on OS).
+
+### 2. Manual `settings.json` wiring (the PowerShell runners)
+
+For the native PowerShell runners (more precise JSON parsing, no `bash`
+dependency), or always-on use without enabling the plugin. Hooks do nothing
+until referenced in `settings.json` under `hooks.PreToolUse`. Ready-to-merge
+snippets live in the repo-root [`settings/`](../../../settings) directory:
 
 - `settings.windows.example.json` — all three hooks (PowerShell runners)
 - `settings.unix.example.json` — american-english + git-guard (Bash runners;
@@ -116,6 +120,51 @@ Those examples assume the hooks are installed at `~/.claude/hooks/<subdir>/...`
 (the repo-root [`install.*`](../../../install.ps1) scripts copy this `hooks/`
 tree there, preserving subdirectories). Merge the `hooks` block into your
 existing `~/.claude/settings.json` — don't overwrite the whole file.
+
+> **Don't double-wire.** If the `conventions` plugin is enabled, it already runs
+> `check-american-english` and `check-git-guard` (the `.sh` runners). Wiring the
+> PowerShell versions of those two *on top* makes each fire twice on every
+> matching call. Use path 2 for the cross-platform hooks only when the plugin is
+> **not** enabled.
+
+### 3. Plugin + only the Windows-only hook (the common Windows setup)
+
+If you enable the plugin for the cross-platform hooks and just want to add
+`check-no-null-redirect` on Windows, you don't need to copy anything or run
+`install.ps1`. Wire one `settings.json` entry that points straight at the script
+the plugin already ships, so it tracks marketplace auto-updates:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash|PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File \"${USERPROFILE}/.claude/plugins/marketplaces/Debussy/plugins/conventions/hooks/windows-only/check-no-null-redirect.ps1\"",
+            "shell": "bash",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+The `shell: "bash"` lets Git Bash expand `${USERPROFILE}` before it hands the
+resolved path to `powershell.exe`. The `marketplaces/Debussy/` segment is the
+marketplace's `name` from `marketplace.json` — adjust if yours differs.
+
+Trade-off: this reaches into Claude Code's plugin storage, which is not a
+formally documented location. It works today and auto-updates with the
+marketplace; if a future Claude Code reorganizes plugin storage you'd fix the
+path. The copy-based path (2, via `install.ps1`) is insulated from that but does
+not auto-update — you re-run `install.ps1` after each hook change. Verified on
+Windows 11 with Git Bash: a violating command exits `2` and is blocked; a clean
+command and PowerShell's own `$null` pass.
 
 ## Regenerating the Bash word map
 

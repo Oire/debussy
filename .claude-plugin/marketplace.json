@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Oire Claude Code customizations — planning, review, documentation, .NET tooling, and opt-in coding-convention hooks.",
-    "version": "0.2.0"
+    "version": "0.3.0"
   },
   "plugins": [
     {
@@ -32,7 +32,7 @@
     {
       "name": "conventions",
       "source": "./plugins/conventions",
-      "description": "Opt-in convention hooks: American English and no Claude-side git writes."
+      "description": "Opinionated Oire convention hooks (opt-in): American English and no Claude-side git writes."
     }
   ]
 }
