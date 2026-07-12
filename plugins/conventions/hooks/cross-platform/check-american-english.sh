@@ -281,9 +281,26 @@ MAP
 raw=$(cat)
 [ -z "${raw//[$' \t\n\r']/}" ] && exit 0
 
-# --- collect the prose the tool is about to write ---------------------------
-# Detect jq by capturing the path from 'command -v' (no null-device redirect).
+# Detect jq once (no null-device redirect); reused for the target path below
+# and the prose fields further down.
 jqbin=$(command -v jq || true)
+
+# --- skip files that never hold the user's English prose --------------------
+# By convention English source text is embedded in code (via __()), never in a
+# lang(s)/*.php file -- those always hold translations. Likewise .po/.pot/.xlf/
+# .xliff are translation-only formats with no English variant. Foreign words in
+# such files routinely collide with British spellings, so skip them outright.
+fp=""
+if [ -n "$jqbin" ]; then
+  fp=$("$jqbin" -r '.tool_input.file_path? // .tool_input.notebook_path? // empty' <<<"$raw" 2>&-)
+fi
+
+case "$fp" in
+  */lang/*.php|*/langs/*.php) exit 0 ;;
+  *.po|*.pot|*.xlf|*.xliff) exit 0 ;;
+esac
+
+# --- collect the prose the tool is about to write ---------------------------
 if [ -n "$jqbin" ]; then
   text=$("$jqbin" -r '
     [ .tool_input.content?,
@@ -299,6 +316,19 @@ else
 fi
 
 [ -z "${text//[$' \t\n\r']/}" ] && exit 0
+
+# --- skip non-English HTML documents ----------------------------------------
+# A document declaring <html lang="fr"> (or any non-en code) is not the user's
+# English prose. A missing or en* lang attribute leaves the check in force.
+htmllang=$(printf '%s' "$text" \
+  | grep -oiE '<html[^>]*\blang[[:space:]]*=[[:space:]]*["'"'"'][a-z]+([_-][a-z0-9]+)?' 2>&- \
+  | head -n 1 \
+  | sed -E 's/.*["'"'"']//' \
+  | tr '[:upper:]' '[:lower:]')
+case "$htmllang" in
+  ''|en|en-*|en_*) : ;;
+  *) exit 0 ;;
+esac
 
 # --- build alternation of British words, find matches -----------------------
 british=$(printf '%s\n' "$WORDMAP" | awk 'NF{print $1}')

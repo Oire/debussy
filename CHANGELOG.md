@@ -5,6 +5,18 @@ All notable changes to this repo are recorded here. Format loosely follows
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-12
+
+### Changed
+- **conventions:** `check-american-english` (Bash and PowerShell) now skips
+  files that never hold the author's English prose — `lang(s)/*.php`,
+  `*.po`/`*.pot`/`*.xlf`/`*.xliff`, and any HTML document whose root
+  `<html lang="…">` is not `en*`. Translated content (message catalogs and
+  localized pages) no longer trips the hook as a false positive. English source
+  files, including HTML with `lang="en"`, are still checked.
+
+## [0.1.0] - 2026-06-10
+
 ### Added
 - Plugin marketplace (`.claude-plugin/marketplace.json`) exposing five plugins:
   - **planning** — brainstorm, plan-make, plan-review, plan-exec.

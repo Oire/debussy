@@ -292,6 +292,26 @@ try {
     exit 0
 }
 
+# Skip files that never hold the user's English prose (mirrors the .sh
+# counterpart). By convention English source text is embedded in code, never in
+# a lang(s)/*.php file -- those always hold translations. Likewise .po/.pot/
+# .xlf/.xliff are translation-only formats. Foreign words in such files
+# routinely collide with British spellings, so skip them outright.
+$targetPath = $null
+if ($null -ne $payload.tool_input) {
+    if ($payload.tool_input.file_path) {
+        $targetPath = [string]$payload.tool_input.file_path
+    } elseif ($payload.tool_input.notebook_path) {
+        $targetPath = [string]$payload.tool_input.notebook_path
+    }
+}
+if ($targetPath) {
+    $normalizedPath = $targetPath -replace '\\', '/'
+    if ($normalizedPath -match '/langs?/.+\.php$' -or $normalizedPath -match '\.(po|pot|xlf|xliff)$') {
+        exit 0
+    }
+}
+
 # Collect the prose the tool is about to write. Each tool puts content in a
 # different place; we glob them all together and scan as a single blob.
 #   Write          → tool_input.content
@@ -321,6 +341,17 @@ if ($parts.Count -eq 0) {
 }
 
 $newText = [string]::Join("`n", $parts)
+
+# Skip non-English HTML documents (root <html lang="xx"> where xx is not en).
+# A missing or en* lang attribute leaves the check in force.
+$htmlLangPattern = '<html[^>]*\blang\s*=\s*["' + [char]39 + ']([a-z]+(?:[-_][a-z0-9]+)?)'
+$htmlLangMatch = [Regex]::Match($newText, $htmlLangPattern, [System.Text.RegularExpressions.RegexOptions]::IgnoreCase)
+if ($htmlLangMatch.Success) {
+    $htmlLang = $htmlLangMatch.Groups[1].Value.ToLowerInvariant()
+    if ($htmlLang -ne 'en' -and -not $htmlLang.StartsWith('en-') -and -not $htmlLang.StartsWith('en_')) {
+        exit 0
+    }
+}
 
 # Build a single word-boundary alternation regex from the map's keys, then
 # extract distinct matches preserving case-insensitivity.

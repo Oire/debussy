@@ -6,7 +6,7 @@
   },
   "metadata": {
     "description": "Oire Claude Code customizations — planning, review, documentation, .NET tooling, and opt-in coding-convention hooks.",
-    "version": "0.1.0"
+    "version": "0.2.0"
   },
   "plugins": [
     {
