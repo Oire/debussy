@@ -5,6 +5,46 @@ All notable changes to this repo are recorded here. Format loosely follows
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-08-01
+
+### Fixed
+- **conventions:** `check-american-english` (Bash runner) only applied its
+  path-based skips when `jq` happened to be installed. Without `jq` the hook
+  could not read `file_path` at all, fell back to scanning the raw payload, and
+  every skip added in 0.2.0 silently stopped applying — a `.po` file was still
+  blocked. The failure was invisible and untested, so it went unnoticed since
+  0.2.0. The runner now lifts the path out of the raw JSON when `jq` is absent
+  (Git Bash on Windows, typically) and normalizes Windows backslash paths
+  before matching.
+
+### Added
+- **conventions:** `check-american-english` now also skips Apple localization
+  catalogs (`.strings`, `.stringsdict`, `.xcstrings`) and files sitting in an
+  unambiguous locale directory — `fr.lproj`, `fr-FR`, `pt_BR`, `zh-Hant`,
+  `es-419`, Android's `values-fr`/`values-pt-rBR`, and a bare code like `fr`
+  directly inside `locales/`, `_locales/`, `lang(s)/`, `i18n/`, `intl/` or
+  `translations/`. English locales stay checked.
+
+  A bare two-letter directory is deliberately not a skip signal by itself: many
+  ISO 639-1 codes double as ordinary directory names (`it` is Maven's
+  integration-test directory; `sh`, `so`, `ts`, `cs`, `pl`, `ml`, `gl`, `hr`,
+  `el`, `id`, `is`, `no` are all codes too). A wrong skip fails silently and
+  permanently; a wrong block is loud and self-correcting, so skipping carries
+  the higher bar.
+
+  Apple's catalogs are skipped for every locale including English, because their
+  keys are identifiers the author cannot rename and match the word map whatever
+  language the values use — the trade-off `.po` already makes with its English
+  msgids.
+- **tests:** 17 cases covering the path skips, which previously had none. They
+  assert both directions (skipped vs still checked) and pass with and without
+  `jq`, so a regression in path extraction fails the suite instead of quietly
+  disabling the feature.
+
+### Notes
+- `conventions` plugin bumped to 0.3.0 (hook behavior changed); marketplace
+  bumped to 0.4.0. Other plugin versions unchanged.
+
 ## [0.3.0] - 2026-07-12
 
 ### Changed

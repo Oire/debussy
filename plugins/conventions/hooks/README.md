@@ -41,6 +41,36 @@ non-American spellings — the `-our`, `-ise`/`-isation`, `-re`, and `-ogue`
 families, plus doubled-consonant past tenses and other dialect pairs (~247
 words in all). Each offending word is reported with its American replacement.
 
+**What it skips.** Files that never hold the author's English prose:
+
+- `lang/` and `langs/` PHP message files.
+- Translation-only formats: `.po`, `.pot`, `.xlf`, `.xliff`, and Apple's
+  `.strings`, `.stringsdict`, `.xcstrings`.
+- Any HTML document whose root `<html lang="…">` is not `en*`.
+- Files inside an unambiguous **locale directory** — `fr.lproj`, `fr-FR`,
+  `pt_BR`, `zh-Hant`, `es-419`, Android's `values-fr` / `values-pt-rBR`, or a
+  bare code like `fr` when it sits directly inside `locales/`, `_locales/`,
+  `lang(s)/`, `i18n/`, `intl/` or `translations/`. English locales (`en`,
+  `en-GB`, `en.lproj`, `Base.lproj`, `values-en`) stay checked.
+
+A bare two-letter directory is deliberately **not** a skip signal on its own:
+plenty of ISO 639-1 codes double as ordinary directory names. `it` is Maven's
+integration-test directory (`src/it/`), and `sh`, `so`, `ts`, `cs`, `pl`, `ml`,
+`gl`, `hr`, `el`, `id`, `is` and `no` are all real language codes as well as
+everyday folder names. The two mistakes are not symmetrical — a wrong skip fails
+silently and permanently, while a wrong block is loud and self-correcting — so
+the bar for adding a skip is higher than the bar for tolerating a block.
+
+Apple's catalogs are skipped for **every** locale, English included, because
+their *keys* are identifiers the author cannot rename: a key naming an operation
+that was stopped matches the word map no matter which language the values are
+written in. `.po` already makes the same trade-off, since it carries English
+msgids.
+
+The target path is read with `jq` when present and lifted from the raw JSON
+otherwise, so every skip above also works on machines without `jq` (Git Bash on
+Windows, typically). Windows backslash paths are normalized before matching.
+
 The PowerShell and Bash runners share **one** word map. The Bash version's map
 is generated from the `.ps1` so the two cannot silently drift — if you add a
 word, add it to the `.ps1` `$wordMap` and regenerate the `.sh` (see

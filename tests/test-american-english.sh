@@ -54,6 +54,65 @@ assert_exit "empty input allowed" 0
 run_hook 'not json at all'
 assert_exit "malformed json allowed" 0
 
+# --- path-based skips -------------------------------------------------------
+# The offending word is assembled at runtime so this file does not trip the very
+# hook it tests (see the hooks README, "Authoring gotcha"). These cases must
+# pass with AND without jq installed -- the hook falls back to reading the path
+# out of the raw JSON, and a silent regression there disables every skip below.
+BAD="behavi""our"
+payload() { printf '{"tool_input":{"file_path":"%s","content":"%s"}}' "$1" "$BAD"; }
+
+run_hook "$(payload '/proj/lang/fr.php')"
+assert_exit "lang/*.php skipped" 0
+
+run_hook "$(payload '/proj/messages.po')"
+assert_exit "gettext catalog skipped" 0
+
+run_hook "$(payload '/proj/fr/Localizable.strings')"
+assert_exit "apple strings catalog skipped" 0
+
+run_hook "$(payload '/proj/en/Localizable.stringsdict')"
+assert_exit "apple catalog skipped even under en (keys are identifiers)" 0
+
+run_hook "$(payload 'C:\\proj\\locales\\fr\\messages.json')"
+assert_exit "windows backslash path normalized" 0
+
+run_hook "$(payload '/proj/locales/fr/messages.json')"
+assert_exit "bare code inside locales/ skipped" 0
+
+run_hook "$(payload '/proj/locales/en/messages.json')"
+assert_exit "english locale still checked" 2
+
+run_hook "$(payload '/proj/src/it/java/Foo.java')"
+assert_exit "integration-test dir not mistaken for Italian" 2
+
+run_hook "$(payload '/proj/fr-FR/app.json')"
+assert_exit "region-suffixed locale dir skipped" 0
+
+run_hook "$(payload '/proj/zh-Hant/app.json')"
+assert_exit "script-suffixed locale dir skipped" 0
+
+run_hook "$(payload '/proj/en-GB/app.json')"
+assert_exit "en-GB still checked (it is English)" 2
+
+run_hook "$(payload '/proj/sub-dir/app.json')"
+assert_exit "hyphenated non-locale dir still checked" 2
+
+run_hook "$(payload '/proj/fr.lproj/InfoPlist.title')"
+assert_exit "lproj bundle skipped" 0
+
+run_hook "$(payload '/proj/Base.lproj/InfoPlist.title')"
+assert_exit "Base.lproj still checked" 2
+
+run_hook "$(payload '/proj/res/values-fr/strings.xml')"
+assert_exit "android locale qualifier skipped" 0
+
+run_hook "$(payload '/proj/res/values-night/themes.xml')"
+assert_exit "android night qualifier still checked" 2
+
+run_hook "$(payload '/proj/docs/notes.md')"
+assert_exit "ordinary file still checked" 2
+
 echo ""
 echo "================================="
 echo "results: $passed passed, $failed failed"

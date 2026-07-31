@@ -1,6 +1,6 @@
 {
   "name": "conventions",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Opt-in coding conventions enforced as PreToolUse hooks: American English everywhere, and no Claude-side git writes (no commit/stage, no git mv/rm). Also ships a Windows-only no-null-redirect hook (not auto-wired, since it must not run on Unix). Enable this plugin to adopt Oire's opinionated conventions; they are organization policy rather than universal truths, so they live behind an explicit opt-in.",
   "author": {
     "name": "André Polykanine",

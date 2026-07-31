@@ -285,19 +285,103 @@ raw=$(cat)
 # and the prose fields further down.
 jqbin=$(command -v jq || true)
 
-# --- skip files that never hold the user's English prose --------------------
-# By convention English source text is embedded in code (via __()), never in a
-# lang(s)/*.php file -- those always hold translations. Likewise .po/.pot/.xlf/
-# .xliff are translation-only formats with no English variant. Foreign words in
-# such files routinely collide with British spellings, so skip them outright.
+# --- locate the file the tool is about to write -----------------------------
+# jq is precise, but it is absent often enough to matter (notably Git Bash on
+# Windows), and with no path every skip rule below silently stops applying --
+# the failure is invisible, so it went unnoticed. Fall back to lifting the
+# first file_path/notebook_path out of the raw JSON by hand, then undo JSON's
+# backslash escaping and normalize separators so a Windows path compares the
+# same as a POSIX one. (A path containing an escaped quote survives imperfectly;
+# no real project has one.)
 fp=""
 if [ -n "$jqbin" ]; then
   fp=$("$jqbin" -r '.tool_input.file_path? // .tool_input.notebook_path? // empty' <<<"$raw" 2>&-)
 fi
+if [ -z "$fp" ]; then
+  fp=$(printf '%s' "$raw" \
+       | grep -oE '"(file_path|notebook_path)"[[:space:]]*:[[:space:]]*"([^"\\]|\\.)*"' \
+       | head -n 1 \
+       | sed -E 's/^"[a-z_]+"[[:space:]]*:[[:space:]]*"//; s/"$//')
+fi
+fp=$(printf '%s' "$fp" | sed -e 's/\\\\/\\/g' -e 's#\\#/#g')
 
+# --- skip files that never hold the author's English prose ------------------
+# By convention English source text is embedded in code (via __()), never in a
+# lang(s)/*.php file -- those always hold translations. Likewise .po/.pot/.xlf/
+# .xliff and Apple's .strings/.stringsdict/.xcstrings are translation-only
+# formats. Foreign words in such files routinely collide with the word map, so
+# skip them outright.
+#
+# Apple's catalogs are skipped for every locale, English included, because their
+# KEYS are identifiers the author cannot rename: a key naming an operation that
+# was stopped, or a settings catalog, matches the map whatever language the
+# values are written in. Same trade-off .po already makes by carrying English
+# msgids.
 case "$fp" in
   */lang/*.php|*/langs/*.php) exit 0 ;;
   *.po|*.pot|*.xlf|*.xliff) exit 0 ;;
+  *.strings|*.stringsdict|*.xcstrings) exit 0 ;;
+esac
+
+# --- skip translations identified by their locale directory -----------------
+# Translation formats no list can enumerate (JSON, YAML, XML, Markdown) are
+# still recognizable by where they sit. Only unambiguous directory shapes count.
+#
+# A bare two-letter name is deliberately NOT enough on its own: many ISO 639-1
+# codes double as everyday directory names -- integration tests, shell scripts,
+# shared objects, TypeScript, C#, Perl and machine learning all collide with a
+# real language code. And the two errors are not symmetrical: a wrong skip fails
+# silently forever, while a wrong block is loud and self-correcting. So a bare
+# code counts only inside a known i18n container.
+is_locale_dir() (
+  LC_ALL=C
+  dir=$1
+  parent=$2
+
+  # Apple bundles: fr.lproj, zh-Hans.lproj. English and Base stay checked.
+  case "$dir" in
+    en.lproj|en-*.lproj|en_*.lproj|Base.lproj|base.lproj) return 1 ;;
+    *.lproj) return 0 ;;
+  esac
+
+  # Region- or script-suffixed: fr-FR, pt_BR, es-419, zh-Hant. Case matters --
+  # an uppercase region is what separates a locale from a name like sub-dir.
+  case "$dir" in
+    en-*|en_*) return 1 ;;
+    [a-z][a-z][-_][A-Z][A-Z]|[a-z][a-z][a-z][-_][A-Z][A-Z]) return 0 ;;
+    [a-z][a-z][-_][0-9][0-9][0-9]|[a-z][a-z][a-z][-_][0-9][0-9][0-9]) return 0 ;;
+    [a-z][a-z][-_][A-Z][a-z][a-z][a-z]|[a-z][a-z][a-z][-_][A-Z][a-z][a-z][a-z]) return 0 ;;
+  esac
+
+  # Android resource qualifiers: values-fr, values-pt-rBR. Density, night and
+  # version qualifiers (values-hdpi, values-night, values-v21) do not match.
+  case "$dir" in
+    values-en|values-en-r[A-Z][A-Z]) return 1 ;;
+    values-[a-z][a-z]|values-[a-z][a-z][a-z]) return 0 ;;
+    values-[a-z][a-z]-r[A-Z][A-Z]|values-[a-z][a-z][a-z]-r[A-Z][A-Z]) return 0 ;;
+  esac
+
+  # Bare code, honored only directly inside a recognized i18n container.
+  case "$parent" in
+    locale|locales|_locales|lang|langs|i18n|intl|translation|translations)
+      case "$dir" in
+        en) return 1 ;;
+        [a-z][a-z]|[a-z][a-z][a-z]) return 0 ;;
+      esac
+      ;;
+  esac
+
+  return 1
+)
+
+case "$fp" in
+  */*)
+    fpdir=${fp%/*}
+    fpparent=${fpdir%/*}
+    if is_locale_dir "${fpdir##*/}" "${fpparent##*/}"; then
+      exit 0
+    fi
+    ;;
 esac
 
 # --- collect the prose the tool is about to write ---------------------------

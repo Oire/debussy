@@ -292,11 +292,13 @@ try {
     exit 0
 }
 
-# Skip files that never hold the user's English prose (mirrors the .sh
-# counterpart). By convention English source text is embedded in code, never in
-# a lang(s)/*.php file -- those always hold translations. Likewise .po/.pot/
-# .xlf/.xliff are translation-only formats. Foreign words in such files
-# routinely collide with British spellings, so skip them outright.
+# Skip files that never hold the author's English prose (mirrors the .sh
+# counterpart -- see it for the full reasoning). By convention English source
+# text is embedded in code, never in a lang(s)/*.php file -- those always hold
+# translations. Likewise .po/.pot/.xlf/.xliff and Apple's .strings/.stringsdict/
+# .xcstrings are translation-only formats. Apple's catalogs are skipped for
+# every locale, English included, because their KEYS are identifiers the author
+# cannot rename and match the word map whatever language the values are in.
 $targetPath = $null
 if ($null -ne $payload.tool_input) {
     if ($payload.tool_input.file_path) {
@@ -307,7 +309,38 @@ if ($null -ne $payload.tool_input) {
 }
 if ($targetPath) {
     $normalizedPath = $targetPath -replace '\\', '/'
-    if ($normalizedPath -match '/langs?/.+\.php$' -or $normalizedPath -match '\.(po|pot|xlf|xliff)$') {
+    if ($normalizedPath -match '/langs?/.+\.php$' -or
+        $normalizedPath -match '\.(po|pot|xlf|xliff|strings|stringsdict|xcstrings)$') {
+        exit 0
+    }
+
+    # Translations identified by their locale directory. Only unambiguous shapes
+    # count -- a bare two-letter name is not enough, since many language codes
+    # double as ordinary directory names (integration tests, shell scripts,
+    # shared objects, TypeScript, C#, Perl), and a wrong skip fails silently.
+    # Comparisons are case-SENSITIVE (-cmatch) on purpose: the uppercase region
+    # is what separates a locale from a name like sub-dir.
+    $dirName = ''
+    $parentName = ''
+    if ($normalizedPath -match '^(?:.*/)?([^/]+)/([^/]+)/[^/]+$') {
+        $parentName = $Matches[1]
+        $dirName = $Matches[2]
+    } elseif ($normalizedPath -match '^(?:.*/)?([^/]+)/[^/]+$') {
+        $dirName = $Matches[1]
+    }
+
+    $skipLocaleDir = $false
+    if ($dirName -match '\.lproj$') {
+        $skipLocaleDir = -not ($dirName -match '^(?:en(?:[-_][^/]*)?|Base)\.lproj$')
+    } elseif ($dirName -cmatch '^[a-z]{2,3}[-_](?:[A-Z]{2}|[0-9]{3}|[A-Z][a-z]{3})$') {
+        $skipLocaleDir = -not ($dirName -cmatch '^en[-_]')
+    } elseif ($dirName -cmatch '^values-[a-z]{2,3}(?:-r[A-Z]{2})?$') {
+        $skipLocaleDir = -not ($dirName -cmatch '^values-en(?:-r[A-Z]{2})?$')
+    } elseif ($dirName -cmatch '^[a-z]{2,3}$' -and
+              $parentName -match '^(?:_?locales?|langs?|i18n|intl|translations?)$') {
+        $skipLocaleDir = ($dirName -cne 'en')
+    }
+    if ($skipLocaleDir) {
         exit 0
     }
 }
