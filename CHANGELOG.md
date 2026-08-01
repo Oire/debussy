@@ -78,7 +78,7 @@ All notable changes to this repo are recorded here. Format loosely follows
   localized pages) no longer trips the hook as a false positive. English source
   files, including HTML with `lang="en"`, are still checked.
 
-## [0.1.0] - 2026-06-10
+## [0.1.0] - 2026-06-06
 
 ### Added
 - Plugin marketplace (`.claude-plugin/marketplace.json`) exposing five plugins:
