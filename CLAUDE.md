@@ -38,8 +38,10 @@ obeys its own rules. Three will bite you while editing:
 2. **No null-device redirects** (Windows) — `check-no-null-redirect` blocks
    `Bash`/`PowerShell` commands containing `/dev/null`, `>nul`, etc. Redirect to
    a real file, drop it, or close a descriptor with `2>&-`.
-3. **No Claude-side git writes** — `check-git-guard` blocks
-   `git commit`/`add`/`stage` and `git mv`/`git rm`. See the Git section.
+3. **No git writes that publish or destroy** — `check-git-guard` blocks `push`,
+   `--amend`, `rebase`, `reset --hard`, `restore`, destructive `checkout`,
+   `clean -f`, bulk staging, and `git mv`/`git rm`. Staging named paths and
+   committing are allowed. See the Git section.
 
 ### Authoring gotchas (important)
 
@@ -102,9 +104,35 @@ vets it read-only) → `plan-exec` (skill, executes it task by task). All in the
 
 ## Git
 
-**Never commit, stage, or push** — not even as the natural last step. The user
-does all git writes manually; leave changes uncommitted for review.
-`check-git-guard` enforces this, but don't rely on the hook — just don't.
+**You may stage and commit; you may not publish or destroy.** The dividing line
+is whether the user can undo it: a local commit comes back with
+`git reset --soft HEAD~1`, a push or a `reset --hard` does not.
 
-**Never use `git mv` or `git rm`.** Use plain `mv` / `rm` / rename (or
-`Move-Item` / `Remove-Item`) so file operations aren't coupled to git's index.
+Allowed, and expected as the last step of finished work:
+
+- `git add <paths>` — **named paths only.** Never `-A`, `.`, or `--all`, and
+  never `commit -a`. The reason committing is safe to delegate is that you
+  looked at every file going in; a sweeping add throws that away and quietly
+  stages scratch output or something with a secret in it.
+- `git commit` — at a **completed, verified** task boundary, not mid-exploration
+  and not on a broken tree. One logical change per commit. Report the message
+  and the file list in your reply so the user can review without digging.
+- If the work is substantial and the user hasn't seen it yet, ask before
+  committing rather than after.
+
+Never, at any point:
+
+- **`git push`** — publishing is the user's call, always.
+- **`git commit --amend`, `git rebase`** — no history rewriting. If a commit was
+  wrong, say so and let the user fix it.
+- **`git reset --hard`, `git restore`, `git checkout -- <path>`, `git clean -f`**
+  — these discard work with nothing to recover it from. `git reset --soft` and
+  plain branch `checkout` are fine.
+- **`git mv` / `git rm`** — use plain `mv` / `rm` / rename (or `Move-Item` /
+  `Remove-Item`) so file operations aren't coupled to git's index.
+
+`check-git-guard` enforces all of this, but don't lean on the hook — it matches
+command text, not intent.
+
+Commit messages are not covered by `check-american-english` (it matches
+`Write`/`Edit`, not `Bash`), so mind the spelling yourself.

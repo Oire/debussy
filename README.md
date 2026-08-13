@@ -90,7 +90,7 @@ story and the PowerShell/manual alternative.
 | Hook | Fires on | Description |
 | --- | --- | --- |
 | `check-american-english` (cross-platform) | `Write`/`Edit`/`MultiEdit`/`NotebookEdit` | Blocks writes containing non-American spellings |
-| `check-git-guard` (cross-platform) | `Bash`/`PowerShell` | Blocks `git commit`/`add`/`stage` and `git mv`/`git rm` |
+| `check-git-guard` (cross-platform) | `Bash`/`PowerShell` | Blocks git writes that publish or destroy work — `push`, `--amend`, `rebase`, `reset --hard`, `restore`, destructive `checkout`, `clean -f`, bulk staging, `git mv`/`git rm`. Staging named paths and committing locally are allowed |
 | `check-no-null-redirect` (Windows-only) | `Bash`/`PowerShell` | Blocks null-device redirects that leave stray `nul` files. Shipped but not auto-wired (a plugin can't branch on OS); wire manually on Windows |
 
 ## Updating plugins
@@ -132,8 +132,9 @@ copied hooks (by name — it never touches your other hooks).
 
 debussy is developed with its own **conventions** plugin enabled, so the repo
 follows its own rules: **American English everywhere**, **no null-device
-redirects on Windows**, and **no Claude-side git commits/staging or
-`git mv`/`git rm`**. Documenting a
+redirects on Windows**, and **no Claude-side git writes that publish or destroy
+work** (Claude may stage named paths and commit; it never pushes, rewrites
+history, discards changes, or uses `git mv`/`git rm`). Documenting a
 spelling checker means occasionally describing non-American spellings without
 spelling them out — see the authoring notes in
 [`plugins/conventions/hooks/README.md`](plugins/conventions/hooks/README.md).

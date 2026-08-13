@@ -96,19 +96,37 @@ bash 3.2 (the system bash on macOS) and is itself null-device-free.
 
 ### check-git-guard (cross-platform)
 
-Blocks `Bash|PowerShell` git write operations Claude must not perform:
+Blocks the `Bash|PowerShell` git write operations Claude must not perform.
+Claude **may** stage explicitly named paths and commit locally. Everything that
+publishes work or destroys it is blocked:
 
-- `git commit` / `git add` / `git stage` — the user stages and commits
-  manually; Claude leaves the working tree for review.
-- `git mv` / `git rm` — use plain filesystem `mv` / `rm` / rename instead, so
-  moves and deletions aren't coupled to git's index.
+| Blocked | Why |
+| --- | --- |
+| `git push` | Publishing is the user's call. |
+| `git commit --amend`, `git rebase` | History rewriting. |
+| `git reset --hard`, `git restore`, `git checkout -- <path>` / `-f`, `git clean -f` | Discard work with nothing to recover it from. |
+| `git add -A` / `.` / `--all`, `git commit -a` | Bulk staging — name the paths instead, so nothing is staged that Claude hasn't looked at. |
+| `git mv`, `git rm` | Use plain `mv` / `rm` / rename, so moves and deletions aren't coupled to git's index. |
 
-It allows `git -C <path>` and global flags before the subcommand, and other git
-verbs (`status`, `diff`, `log`, …) pass untouched. Same content-matching caveat
-as the others: a command that merely *quotes* a blocked subcommand trips it.
+The line between the two lists is *reversibility*. A local commit is undone with
+`git reset --soft HEAD~1`; everything in the table either publishes work or
+destroys it. The bulk-staging block is the other half of that bargain — the
+reason a commit is safe to let Claude make is that Claude named every path going
+into it.
 
-> Note: `git push` is intentionally not blocked here (it's a separate manual
-> step). Add `push` to the commit pattern if you want it guarded too.
+The non-destructive neighbors of the blocked commands stay available:
+`git reset --soft`, `git checkout <branch>`, `git checkout -b`, `git clean -n`,
+`git add -u`, and every read-only verb (`status`, `diff`, `log`, …).
+
+It allows `git -C <path>` and global flags before the subcommand. Flags are
+matched as whole tokens, so `git add .` is blocked while `git add .gitignore`
+and `git add ./src/foo.ts` are not. Same content-matching caveat as the others:
+a command that merely *quotes* a blocked operation trips it — including a commit
+message that happens to mention pushing.
+
+There is deliberately nothing to configure. If you want Claude out of git
+entirely, turn the hook off with `/hooks`, or stay on conventions 0.3.x, where
+`add`/`stage`/`commit` were blocked outright.
 
 ### check-no-null-redirect (Windows-only)
 

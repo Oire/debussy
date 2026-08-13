@@ -5,6 +5,51 @@ All notable changes to this repo are recorded here. Format loosely follows
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-08-13
+
+### Changed
+- **conventions:** `check-git-guard` was rebuilt around *reversibility* rather
+  than around "git writes" as a category. Claude may now stage explicitly named
+  paths and commit locally — a commit is undone with
+  `git reset --soft HEAD~1`, so the review checkpoint it used to protect is
+  still available after the fact. Everything that publishes or destroys stays
+  blocked, and several operations that were never guarded at all now are.
+
+  Blocked at every level: `git push` (previously only prose in `CLAUDE.md` told
+  Claude not to — the hook never checked), `commit --amend` and `rebase`
+  (history rewriting), `reset --hard`, `restore`, `checkout -- <path>` /
+  `checkout -f` and `clean -f` (discard work irrecoverably), bulk staging
+  (`add -A` / `.` / `--all`, `commit -a`), and `git mv` / `git rm` (unchanged).
+
+  Bulk staging is the counterweight to allowing commits: naming paths is what
+  makes a delegated commit reviewable, and it keeps a sweeping add from
+  quietly staging scratch output or a file with a secret in it. The
+  non-destructive neighbors stay available — `reset --soft`, plain branch
+  `checkout`, `checkout -b`, `clean -n`, `add -u`.
+
+  There is deliberately no setting for this — no environment variable, no
+  levels. A guard with a knob on it is a guard you have to remember the state
+  of, and the point of a convention hook is that you set it up once and stop
+  thinking about it. Anyone who wants Claude out of git entirely turns the hook
+  off with `/hooks` or stays on conventions 0.3.x.
+
+### Added
+- **tests:** the git-guard suite grows from 11 cases to 39, covering each newly
+  blocked operation and its non-destructive neighbor.
+
+### Fixed
+- **tests:** the git-guard suite now asserts the same verdicts on both
+  extraction paths — the bare command (with `jq`) and the raw JSON payload
+  (without it). The first draft of the token matcher passed on one and silently
+  allowed `git add -A`, `git add .`, and `git clean -fd` on the other, which is
+  the same failure mode `check-american-english` hit in 0.4.0.
+
+### Notes
+- `conventions` plugin bumped to 0.4.0 (hook behavior changed); marketplace
+  bumped to 0.5.0. Other plugin versions unchanged.
+- Existing installs pick this up on `/plugin update conventions@debussy` (or
+  auto-update). Anyone who wants the old behavior stays on 0.3.x.
+
 ## [0.4.0] - 2026-08-01
 
 ### Fixed
