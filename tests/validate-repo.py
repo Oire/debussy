@@ -238,6 +238,32 @@ check(
 )
 
 
+# Windows PowerShell 5.1 reads a .ps1 with no BOM using the system ANSI code
+# page, so a UTF-8 character arrives as mojibake. In a comment that is merely
+# ugly; in a string literal it is fatal, because the third byte of an em dash
+# (0x94) is a closing smart quote in CP1252 and PowerShell honors smart quotes
+# as string delimiters -- the string ends early and the whole hook dies with a
+# parse error, which a PreToolUse hook reports as exit 1: not blocked, not
+# enforced, no visible complaint. Staying inside ASCII sidesteps the entire
+# question of how any given machine decodes the file.
+for ps1 in sorted(ROOT.glob("plugins/**/hooks/**/*.ps1")) + sorted(
+    ROOT.glob("tests/*.ps1")
+):
+    raw = ps1.read_bytes()
+    offenders = sorted(
+        {
+            line_no
+            for line_no, line in enumerate(raw.split(b"\n"), start=1)
+            if any(byte > 127 for byte in line)
+        }
+    )
+    check(
+        not offenders,
+        f"{rel(ps1)} is pure ASCII (Windows PowerShell 5.1 reads it as ANSI)",
+        f"non-ASCII on line(s): {', '.join(str(n) for n in offenders[:10])}",
+    )
+
+
 def ps_word_map(path: Path) -> dict[str, str]:
     text = path.read_text(encoding="utf-8")
     body = text.split("$wordMap = [ordered]@{", 1)[-1].split("\n}", 1)[0]

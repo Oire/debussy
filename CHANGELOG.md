@@ -40,6 +40,17 @@ All notable changes to this repo are recorded here. Format loosely follows
   ways that are invisible locally.
 
 ### Fixed
+- **conventions 0.5.1:** `check-no-null-redirect.ps1` could fail to parse under
+  Windows PowerShell 5.1 — the interpreter the plugin's own Windows wiring
+  uses. 5.1 reads a BOM-less `.ps1` using the system ANSI code page, so the
+  em dash in a message string arrived as mojibake whose third byte (`0x94`) is
+  a closing smart quote in CP1252; PowerShell honors smart quotes as string
+  delimiters, the string ended early, and the script died with a parse error.
+  A hook that fails to parse exits 1, which Claude Code treats as a hook error
+  rather than a block — so on an affected machine the convention silently
+  stopped being enforced. Both PowerShell hooks are now pure ASCII, and
+  `validate-repo.py` fails if any `.ps1` stops being. Found by the new Windows
+  CI job on its first run; it had been shipping since 0.1.0.
 - **CI:** the frontmatter validator printed its success line after
   `sys.exit()`, so it never ran, and it skipped any path containing `.git` —
   which includes `.github`. Both are gone with the inline script.
