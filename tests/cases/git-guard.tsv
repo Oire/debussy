@@ -1,0 +1,102 @@
+# Case table for check-git-guard, read by BOTH runners' test suites
+# (tests/test-git-guard.sh and tests/test-git-guard.ps1). One table means the
+# two suites cannot drift, which is the failure mode this file exists to
+# prevent: the .ps1 once had a bug the .sh did not, and no test caught it.
+#
+# Tab-separated, four or five columns:
+#   expect  exit code the hook must return (0 = allowed, 2 = blocked)
+#   mode    json   = wrap the command in a PreToolUse payload
+#           bare   = feed the command as raw stdin (the no-jq fallback path)
+#           parsed = like json, but the verdict only holds when the command is
+#                    really extracted from the payload. The .ps1 always parses
+#                    JSON; the .sh only when jq is installed, and scanning the
+#                    raw payload cannot tell a '\n' escape from a space. The
+#                    Bash suite skips these when jq is absent.
+#   command the command text; \n means a line break
+#   label   what the case is called in the output
+#   title   optional: substring the block message must contain, so a case
+#           cannot pass by tripping the wrong rule
+#
+# Lines starting with # are comments; #> starts a new section heading.
+
+#> staging named paths and committing is allowed
+0	json	git commit -m wip	git commit
+0	json	git add src/foo.ts src/bar.ts	git add <paths>
+0	json	git add ./src/foo.ts	git add ./path
+0	json	git -C /tmp/x commit -m y	git -C path commit
+0	json	git commit -m "add the adder"	commit message wording
+
+#> bulk staging is blocked
+2	json	git add -A	git add -A	Bulk 'git add' blocked
+2	json	git add .	git add .	Bulk 'git add' blocked
+2	json	git add --all	git add --all	Bulk 'git add' blocked
+2	json	git commit -am wip	git commit -am	'git commit -a' blocked
+2	json	git commit -a -m wip	git commit -a	'git commit -a' blocked
+
+#> plain pushing is allowed
+0	json	git push	git push
+0	json	git push origin master	git push origin master
+0	json	git -C /tmp/x push	git -C path push
+0	json	git push -u origin feature	git push -u
+0	json	git push --set-upstream origin f	git push --set-upstream
+0	json	git push --follow-tags	git push --follow-tags
+0	json	git push --tags origin	git push --tags
+0	json	git push -n origin master	git push -n
+0	json	git push origin HEAD:refs/heads/x	git push <refspec>
+0	parsed	git push origin main\nrm -f scratch.txt	push, then an -f on the next line
+
+#> pushes that rewrite or delete published history are blocked
+2	json	git push --force	git push --force	Destructive git push blocked
+2	json	git push -f origin master	git push -f	Destructive git push blocked
+2	json	git push --force-with-lease	git push --force-with-lease	Destructive git push blocked
+2	json	git push origin +master	git push +refspec	Destructive git push blocked
+2	json	git push --delete origin old	git push --delete	Destructive git push blocked
+2	json	git push -d origin old	git push -d	Destructive git push blocked
+2	json	git push --mirror origin	git push --mirror	Destructive git push blocked
+2	json	git push --prune origin	git push --prune	Destructive git push blocked
+2	json	git push -fu origin master	git push -fu	Destructive git push blocked
+
+#> history rewriting is blocked
+2	json	git commit --amend -m x	git commit --amend	git commit --amend blocked
+2	json	git rebase master	git rebase	git rebase blocked
+
+#> discarding work is blocked
+2	json	git reset --hard HEAD	git reset --hard	git reset --hard blocked
+2	json	git restore src/foo.ts	git restore	git restore blocked
+2	json	git checkout -- src/foo.ts	git checkout -- <path>	Destructive git checkout blocked
+2	json	git checkout -f main	git checkout -f	Destructive git checkout blocked
+2	json	git clean -fd	git clean -fd	git clean --force blocked
+
+#> their non-destructive neighbors are allowed
+0	json	git reset --soft HEAD~1	git reset --soft
+0	json	git checkout my-feature	git checkout <branch>
+0	json	git checkout -b new-branch	git checkout -b
+0	json	git clean -n	git clean -n
+0	json	git add -u	git add -u
+
+#> file operations are blocked
+2	json	git mv a b	git mv	git mv / git rm blocked
+2	json	git rm old.txt	git rm	git mv / git rm blocked
+
+#> read-only git and non-git commands are untouched
+0	json	git status	git status
+0	json	git diff --stat	git diff
+0	json	git log --oneline	git log
+0	json	echo legitimate adder	non-git lookalike
+
+#> same verdicts on the raw-payload path (what runs when jq is absent)
+2	bare	git add -A	bare: git add -A	Bulk 'git add' blocked
+2	bare	git add .	bare: git add .	Bulk 'git add' blocked
+2	bare	git clean -fd	bare: git clean -fd	git clean --force blocked
+2	bare	git checkout -- src/foo.ts	bare: git checkout --	Destructive git checkout blocked
+2	bare	git push -f origin master	bare: git push -f	Destructive git push blocked
+2	bare	git push --force	bare: git push --force	Destructive git push blocked
+0	bare	git add .gitignore	bare: git add .gitignore
+0	bare	git add src/foo.ts	bare: git add <path>
+0	bare	git commit -m wip	bare: git commit
+0	bare	git push origin master	bare: git push
+0	bare	git push -u origin feature	bare: git push -u
+# Not listed here: the multi-line push above, fed as an unparsed payload. With
+# no jq the guard sees the '\n' escape as two characters on one line and blocks
+# it. That over-block is the safe direction, and it is why that case is
+# 'parsed' rather than 'json'.

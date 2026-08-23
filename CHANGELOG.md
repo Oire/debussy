@@ -5,6 +5,45 @@ All notable changes to this repo are recorded here. Format loosely follows
 
 ## [Unreleased]
 
+### Added
+- **CI:** the workflow now tests what the repo actually ships. It ran green on
+  every commit while covering one shell on one operating system; the
+  PowerShell runners — half of every cross-platform hook, and the only runner
+  the Windows install path uses — had no tests at all, which is how the
+  line-break bug fixed in 0.6.0 reached master.
+
+  Jobs: repo structure; ShellCheck; the Bash suites on Linux and macOS,
+  invoked as `/bin/bash` so macOS exercises the bash 3.2 floor the runners
+  claim; a Linux run with `jq` hidden, because the raw-payload fallback is the
+  real path on machines that never installed it; and the PowerShell suites on
+  Windows (5.1 *and* 7) and Linux (7). A single `CI` gate job aggregates them
+  for branch protection. Also added `permissions: contents: read`, a
+  concurrency group, and `workflow_dispatch`.
+- **tests:** PowerShell suites for all three hooks —
+  `test-git-guard.ps1`, `test-american-english.ps1`, and
+  `test-no-null-redirect.ps1`, the last covering a hook that had never been
+  tested. Each suite tests whichever PowerShell edition starts it.
+- **tests:** `validate-repo.py` (116 checks) enforces what the docs ask for and
+  nobody remembers: plugin names matching their directories, marketplace
+  entries resolving to real directories, semver versions, skill frontmatter
+  matching its directory, `hooks.json` pointing at files that exist, no
+  hardcoded `~/.claude` paths in components, cross-platform runners shipping in
+  `.ps1`/`.sh` pairs, and the two American English word maps agreeing entry for
+  entry. It replaces the inline Python in the workflow, so it can be run
+  locally.
+- **tests:** shared case tables in `tests/cases/`. A hook's two runners now read
+  the same cases, so adding one covers both and a verdict can only diverge
+  deliberately. Rows a runner cannot answer are marked and skipped rather than
+  quietly absent. Both readers fail if they read fewer cases than expected.
+- `.gitattributes` pinning text files to LF. The repo is developed on Windows
+  and its shell runners execute on Linux in CI, where a CRLF `.sh` fails in
+  ways that are invisible locally.
+
+### Fixed
+- **CI:** the frontmatter validator printed its success line after
+  `sys.exit()`, so it never ran, and it skipped any path containing `.git` —
+  which includes `.github`. Both are gone with the inline script.
+
 ## [0.6.0] - 2026-08-23
 
 ### Changed

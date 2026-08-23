@@ -1,0 +1,34 @@
+# Path-based skip cases for check-american-english, read by BOTH runners'
+# test suites (tests/test-american-english.sh and .ps1). One table means the
+# two suites cannot drift.
+#
+# Tab-separated, three columns:
+#   expect  exit code the hook must return for a file at this path whose
+#           content contains a flagged word (0 = skipped, 2 = blocked)
+#   path    the file_path in the payload; backslashes are escaped by each
+#           suite when it builds the JSON
+#   label   what the case is called in the output
+#
+# The flagged word itself is never written here: each suite pulls one out of
+# the runner's own word map at run time, so neither this table nor the suites
+# trip the very hook they test (see the "Authoring gotcha" in the hooks README).
+#
+# Lines starting with # are comments.
+
+0	/proj/lang/fr.php	lang/*.php skipped
+0	/proj/messages.po	gettext catalog skipped
+0	/proj/fr/Localizable.strings	apple strings catalog skipped
+0	/proj/en/Localizable.stringsdict	apple catalog skipped even under en (keys are identifiers)
+0	C:\proj\locales\fr\messages.json	windows backslash path normalized
+0	/proj/locales/fr/messages.json	bare code inside locales/ skipped
+2	/proj/locales/en/messages.json	english locale still checked
+2	/proj/src/it/java/Foo.java	integration-test dir not mistaken for Italian
+0	/proj/fr-FR/app.json	region-suffixed locale dir skipped
+0	/proj/zh-Hant/app.json	script-suffixed locale dir skipped
+2	/proj/en-GB/app.json	en-GB still checked (it is English)
+2	/proj/sub-dir/app.json	hyphenated non-locale dir still checked
+0	/proj/fr.lproj/InfoPlist.title	lproj bundle skipped
+2	/proj/Base.lproj/InfoPlist.title	Base.lproj still checked
+0	/proj/res/values-fr/strings.xml	android locale qualifier skipped
+2	/proj/res/values-night/themes.xml	android night qualifier still checked
+2	/proj/docs/notes.md	ordinary file still checked
