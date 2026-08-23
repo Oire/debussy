@@ -38,10 +38,11 @@ obeys its own rules. Three will bite you while editing:
 2. **No null-device redirects** (Windows) — `check-no-null-redirect` blocks
    `Bash`/`PowerShell` commands containing `/dev/null`, `>nul`, etc. Redirect to
    a real file, drop it, or close a descriptor with `2>&-`.
-3. **No git writes that publish or destroy** — `check-git-guard` blocks `push`,
-   `--amend`, `rebase`, `reset --hard`, `restore`, destructive `checkout`,
-   `clean -f`, bulk staging, and `git mv`/`git rm`. Staging named paths and
-   committing are allowed. See the Git section.
+3. **No git writes that destroy work** — `check-git-guard` blocks force/deleting
+   /mirroring `push`, `--amend`, `rebase`, `reset --hard`, `restore`,
+   destructive `checkout`, `clean -f`, bulk staging, and `git mv`/`git rm`.
+   Staging named paths, committing, and a plain `push` are allowed. See the Git
+   section.
 
 ### Authoring gotchas (important)
 
@@ -104,9 +105,10 @@ vets it read-only) → `plan-exec` (skill, executes it task by task). All in the
 
 ## Git
 
-**You may stage and commit; you may not publish or destroy.** The dividing line
-is whether the user can undo it: a local commit comes back with
-`git reset --soft HEAD~1`, a push or a `reset --hard` does not.
+**You may stage, commit, and push; you may not destroy.** The dividing line is
+whether the user can undo it: a local commit comes back with
+`git reset --soft HEAD~1` and a pushed commit comes back with a revert, while a
+force-push or a `reset --hard` does not.
 
 Allowed, and expected as the last step of finished work:
 
@@ -117,12 +119,16 @@ Allowed, and expected as the last step of finished work:
 - `git commit` — at a **completed, verified** task boundary, not mid-exploration
   and not on a broken tree. One logical change per commit. Report the message
   and the file list in your reply so the user can review without digging.
+- `git push` — a plain push of commits you made. It only adds to the remote, and
+  a bad commit is undone with a revert. Say what you pushed and where.
 - If the work is substantial and the user hasn't seen it yet, ask before
-  committing rather than after.
+  committing or pushing rather than after.
 
 Never, at any point:
 
-- **`git push`** — publishing is the user's call, always.
+- **`git push --force` / `-f`** (including `--force-with-lease`), **`--delete` /
+  `-d`, `--mirror`, `--prune`, `+refspec`** — these rewrite or delete published
+  history, which nothing local brings back.
 - **`git commit --amend`, `git rebase`** — no history rewriting. If a commit was
   wrong, say so and let the user fix it.
 - **`git reset --hard`, `git restore`, `git checkout -- <path>`, `git clean -f`**

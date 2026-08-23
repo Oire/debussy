@@ -1,10 +1,14 @@
 # Pre-run hook: blocks the git WRITE operations Claude must not perform.
 #
 # The dividing line is whether the user can undo it. A local commit comes back
-# with 'git reset --soft HEAD~1', so Claude may stage explicitly named paths and
-# commit. Everything that publishes work or destroys it is blocked:
+# with 'git reset --soft HEAD~1' and a pushed commit comes back with a revert,
+# so Claude may stage explicitly named paths, commit, and push. Everything that
+# destroys work - locally or on the remote - is blocked:
 #
-#   push                        publishing is the user's call.
+#   push --force / -f, -d /
+#   --delete, --mirror,
+#   --prune, +refspec           rewriting or deleting published history. A
+#                               plain push only adds to it, so it is allowed.
 #   commit --amend, rebase      history rewriting.
 #   reset --hard, restore,
 #   checkout -- / -f, clean -f  discard work with nothing to recover it from.
@@ -24,7 +28,7 @@
 # /hooks inside Claude Code.
 #
 # Caveat: this matches on command text, so a command that merely *quotes* a
-# blocked operation (a heredoc, or a commit message mentioning "git push")
+# blocked operation (a heredoc, or a commit message mentioning "reset --hard")
 # also trips it. Author such content with the Write tool, which this hook does
 # not match.
 
@@ -39,9 +43,12 @@ if ([string]::IsNullOrEmpty($cmd)) { exit 0 }
 $opts = [System.Text.RegularExpressions.RegexOptions]::IgnoreCase
 # Allow 'git -C <path>' and any global flags before the subcommand.
 $flags = '(-C\s+\S+\s+)?(--?\S+\s+)*'
-# An argument of the same subcommand: anything up to a shell chain separator,
-# ending at whitespace so the flag that follows is matched as a whole token.
-$arg = '([^&|;]*\s)?'
+# An argument of the same subcommand: anything up to a shell chain separator or
+# a line break, ending at whitespace so the flag that follows is matched as a
+# whole token. Stopping at the line break keeps a flag on the next line of a
+# multi-line script from being read as this command's - which is what the .sh
+# runner does implicitly, since grep matches one line at a time.
+$arg = '([^\r\n&|;]*[ \t])?'
 # A blocked flag must end as a whole token, never mid-token: the next character
 # has to be one that cannot continue a flag or path. Whitespace qualifies, and
 # so does a closing quote. This is what keeps 'git add .' apart from
@@ -57,9 +64,23 @@ function Add-Rule([string]$pattern, [string]$title, [string[]]$advice) {
     }
 }
 
-Add-Rule "push\b" "git push blocked" @(
-    "Pushing publishes work and is the user's call, always.",
-    "Commit locally instead, then tell the user what is ready to push."
+# A plain push only adds commits to the remote, and a bad one is undone with a
+# revert. These variants rewrite or delete what is already published, which no
+# amount of local work brings back. '--force' is matched as a prefix on purpose,
+# so '--force-with-lease' and '--force-if-includes' are caught too: the lease
+# makes the race safe, not the history rewrite.
+Add-Rule "push$arg(--force|--delete|--mirror|--prune|\+)" "Destructive git push blocked" @(
+    "Force-pushing, deleting a remote branch, mirroring, or pruning rewrites or",
+    "removes published history - the user cannot get it back.",
+    "A plain 'git push' is allowed. Say what you would have force-pushed and",
+    "let the user do it."
+)
+
+Add-Rule "push$arg-[A-Za-z]*[fd][A-Za-z]*$tok" "Destructive git push blocked" @(
+    "'-f' force-pushes and '-d' deletes a remote branch; both rewrite or remove",
+    "published history, which the user cannot get back.",
+    "A plain 'git push' is allowed. Say what you would have force-pushed and",
+    "let the user do it."
 )
 
 Add-Rule "(mv|rm)\b" "git mv / git rm blocked" @(

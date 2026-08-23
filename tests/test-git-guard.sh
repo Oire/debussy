@@ -40,10 +40,31 @@ run_hook '{"tool_input":{"command":"git commit -am wip"}}';           assert_exi
 run_hook '{"tool_input":{"command":"git commit -a -m wip"}}';         assert_exit "git commit -a blocked" 2
 
 echo ""
-echo "-- publishing and history rewriting are blocked"
-run_hook '{"tool_input":{"command":"git push"}}';                     assert_exit "git push blocked" 2
-run_hook '{"tool_input":{"command":"git push origin master"}}';       assert_exit "git push origin blocked" 2
-run_hook '{"tool_input":{"command":"git -C /tmp/x push"}}';           assert_exit "git -C path push blocked" 2
+echo "-- plain pushing is allowed"
+run_hook '{"tool_input":{"command":"git push"}}';                     assert_exit "git push allowed" 0
+run_hook '{"tool_input":{"command":"git push origin master"}}';       assert_exit "git push origin allowed" 0
+run_hook '{"tool_input":{"command":"git -C /tmp/x push"}}';           assert_exit "git -C path push allowed" 0
+run_hook '{"tool_input":{"command":"git push -u origin feature"}}';   assert_exit "git push -u allowed" 0
+run_hook '{"tool_input":{"command":"git push --set-upstream origin f"}}'; assert_exit "git push --set-upstream allowed" 0
+run_hook '{"tool_input":{"command":"git push --follow-tags"}}';       assert_exit "git push --follow-tags allowed" 0
+run_hook '{"tool_input":{"command":"git push --tags origin"}}';       assert_exit "git push --tags allowed" 0
+run_hook '{"tool_input":{"command":"git push -n origin master"}}';    assert_exit "git push -n allowed" 0
+run_hook '{"tool_input":{"command":"git push origin HEAD:refs/heads/x"}}'; assert_exit "git push refspec allowed" 0
+
+echo ""
+echo "-- pushes that rewrite or delete published history are blocked"
+run_hook '{"tool_input":{"command":"git push --force"}}';             assert_exit "git push --force blocked" 2
+run_hook '{"tool_input":{"command":"git push -f origin master"}}';    assert_exit "git push -f blocked" 2
+run_hook '{"tool_input":{"command":"git push --force-with-lease"}}';  assert_exit "git push --force-with-lease blocked" 2
+run_hook '{"tool_input":{"command":"git push origin +master"}}';      assert_exit "git push +refspec blocked" 2
+run_hook '{"tool_input":{"command":"git push --delete origin old"}}'; assert_exit "git push --delete blocked" 2
+run_hook '{"tool_input":{"command":"git push -d origin old"}}';       assert_exit "git push -d blocked" 2
+run_hook '{"tool_input":{"command":"git push --mirror origin"}}';     assert_exit "git push --mirror blocked" 2
+run_hook '{"tool_input":{"command":"git push --prune origin"}}';      assert_exit "git push --prune blocked" 2
+run_hook '{"tool_input":{"command":"git push -fu origin master"}}';   assert_exit "git push -fu blocked" 2
+
+echo ""
+echo "-- history rewriting is blocked"
 run_hook '{"tool_input":{"command":"git commit --amend -m x"}}';      assert_exit "git commit --amend blocked" 2
 run_hook '{"tool_input":{"command":"git rebase master"}}';            assert_exit "git rebase blocked" 2
 
@@ -85,9 +106,13 @@ run_hook 'git add -A';                                                assert_exi
 run_hook 'git add .';                                                 assert_exit "bare: git add . blocked" 2
 run_hook 'git clean -fd';                                             assert_exit "bare: git clean -fd blocked" 2
 run_hook 'git checkout -- src/foo.ts';                                assert_exit "bare: git checkout -- blocked" 2
+run_hook 'git push -f origin master';                                 assert_exit "bare: git push -f blocked" 2
+run_hook 'git push --force';                                          assert_exit "bare: git push --force blocked" 2
 run_hook 'git add .gitignore';                                        assert_exit "bare: git add .gitignore allowed" 0
 run_hook 'git add src/foo.ts';                                        assert_exit "bare: git add <path> allowed" 0
 run_hook 'git commit -m wip';                                         assert_exit "bare: git commit allowed" 0
+run_hook 'git push origin master';                                    assert_exit "bare: git push allowed" 0
+run_hook 'git push -u origin feature';                                assert_exit "bare: git push -u allowed" 0
 
 echo ""
 echo "=========================="

@@ -1,7 +1,7 @@
 {
   "name": "conventions",
-  "version": "0.4.0",
-  "description": "Opt-in coding conventions enforced as PreToolUse hooks: American English everywhere, and a git guard that blocks the writes which publish or destroy work (push, amend, rebase, reset --hard, restore, destructive checkout, clean -f, bulk staging, git mv/rm) while allowing Claude to stage named paths and commit locally. Also ships a Windows-only no-null-redirect hook (not auto-wired, since it must not run on Unix). Enable this plugin to adopt Oire's opinionated conventions; they are organization policy rather than universal truths, so they live behind an explicit opt-in.",
+  "version": "0.5.0",
+  "description": "Opt-in coding conventions enforced as PreToolUse hooks: American English everywhere, and a git guard that blocks the writes which destroy work (force/deleting/mirroring push, amend, rebase, reset --hard, restore, destructive checkout, clean -f, bulk staging, git mv/rm) while allowing Claude to stage named paths, commit, and push. Also ships a Windows-only no-null-redirect hook (not auto-wired, since it must not run on Unix). Enable this plugin to adopt Oire's opinionated conventions; they are organization policy rather than universal truths, so they live behind an explicit opt-in.",
   "author": {
     "name": "André Polykanine",
     "email": "ap@oire.me"

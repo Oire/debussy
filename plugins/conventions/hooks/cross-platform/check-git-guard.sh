@@ -2,10 +2,14 @@
 # Pre-run hook: blocks the git WRITE operations Claude must not perform.
 #
 # The dividing line is whether the user can undo it. A local commit comes back
-# with 'git reset --soft HEAD~1', so Claude may stage explicitly named paths and
-# commit. Everything that publishes work or destroys it is blocked:
+# with 'git reset --soft HEAD~1' and a pushed commit comes back with a revert,
+# so Claude may stage explicitly named paths, commit, and push. Everything that
+# destroys work - locally or on the remote - is blocked:
 #
-#   push                        publishing is the user's call.
+#   push --force / -f, -d /
+#   --delete, --mirror,
+#   --prune, +refspec           rewriting or deleting published history. A
+#                               plain push only adds to it, so it is allowed.
 #   commit --amend, rebase      history rewriting.
 #   reset --hard, restore,
 #   checkout -- / -f, clean -f  discard work with nothing to recover it from.
@@ -47,6 +51,8 @@ pre='(^|[^[:alnum:]_])git[[:space:]]+(-C[[:space:]]+[^[:space:]]+[[:space:]]+)?(
 suf='([^[:alnum:]_]|$)'
 # An argument of the same subcommand: anything up to a shell chain separator,
 # ending at whitespace so the flag that follows is matched as a whole token.
+# It cannot run past a line break either, since grep matches one line at a time
+# (the .ps1 has to exclude \r\n explicitly to get the same behavior).
 arg='([^&|;]*[[:space:]])?'
 # A blocked flag must end as a whole token, never mid-token: the next character
 # has to be one that cannot continue a flag or path. Whitespace qualifies, and
@@ -70,10 +76,18 @@ block() {
   exit 2
 }
 
-if matches "${pre}push${suf}"; then
-  block "git push blocked" \
-    "Pushing publishes work and is the user's call, always." \
-    "Commit locally instead, then tell the user what is ready to push."
+# A plain push only adds commits to the remote, and a bad one is undone with a
+# revert. These variants rewrite or delete what is already published, which no
+# amount of local work brings back. '--force' is matched as a prefix on purpose,
+# so '--force-with-lease' and '--force-if-includes' are caught too: the lease
+# makes the race safe, not the history rewrite.
+if matches "${pre}push${arg}(--force|--delete|--mirror|--prune|\+)" ||
+   matches "${pre}push${arg}-[[:alpha:]]*[fd][[:alpha:]]*${tok}"; then
+  block "Destructive git push blocked" \
+    "Force-pushing, deleting a remote branch, mirroring, or pruning rewrites" \
+    "or removes published history - the user cannot get it back." \
+    "A plain 'git push' is allowed. Say what you would have force-pushed and" \
+    "let the user do it."
 fi
 
 if matches "${pre}(mv|rm)${suf}"; then

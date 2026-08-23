@@ -5,6 +5,43 @@ All notable changes to this repo are recorded here. Format loosely follows
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-08-23
+
+### Changed
+- **conventions:** `check-git-guard` now allows `git push`. The 0.5.0 rebuild
+  moved the guard onto *reversibility* but kept push on the blocked list out of
+  the older "publishing is the user's call" framing. Those two rules disagree: a
+  plain push only ever adds commits to a remote, and a commit that should not
+  have gone out comes back with a revert — the same standard that made a local
+  commit acceptable. So a plain push is allowed, along with `-u`,
+  `--set-upstream`, `--tags`, `--follow-tags`, and `-n`.
+
+  What stays blocked is the push that *removes* history rather than adding to
+  it: `--force` / `-f`, `--delete` / `-d`, `--mirror`, `--prune`, and a
+  `+refspec`. `--force` is matched as a prefix, so `--force-with-lease` and
+  `--force-if-includes` are blocked too — the lease makes the race safe, not the
+  history rewrite. Everything else in the guard is untouched: amend, rebase,
+  `reset --hard`, `restore`, destructive `checkout`, `clean -f`, bulk staging,
+  and `git mv` / `git rm` are all still blocked.
+
+### Fixed
+- **conventions:** in the PowerShell runner, the scan for a blocked flag could
+  run past a line break and pick one up from the *next* command in a multi-line
+  script — so a `rm -f` two lines down could block the push above it. It now
+  stops at the line break, matching the Bash runner, where grep already matched
+  one line at a time.
+
+### Added
+- **tests:** the git-guard suite grows from 39 cases to 58 — nine allowed push
+  forms, nine blocked ones, and both on the raw-payload path.
+
+### Notes
+- `conventions` plugin bumped to 0.5.0 (hook behavior changed); marketplace
+  bumped to 0.6.0. Other plugin versions unchanged.
+- The push relaxation is deliberately one-way: it widens what Claude may do on
+  the remote only where the change is additive. If you want the 0.5.0 behavior
+  back, stay on conventions 0.4.x.
+
 ## [0.5.0] - 2026-08-13
 
 ### Changed
