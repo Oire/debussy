@@ -1,0 +1,4 @@
+# The runners are executed on Linux and macOS in CI, and a CRLF .sh fails
+# there in ways that are invisible on Windows, where this repo is developed.
+# Keep every text file LF, in the index and in the working tree.
+* text=auto eol=lf

@@ -23,6 +23,11 @@ plugin.
   - `dotnet-tools` — the .NET style corrector.
   - `conventions` — the convention hooks (+ their `hooks/hooks.json`).
 - `settings/` — `settings.{windows,unix}.example.json` for the manual hook path.
+- `tests/` — the hook suites (`.sh` + `.ps1` per cross-platform runner), the
+  shared case tables in `cases/`, and `validate-repo.py` for repo structure.
+  Run them before committing; see `tests/README.md`.
+- `.github/workflows/ci.yml` — runs all of the above on Linux, macOS, and
+  Windows, plus a no-`jq` Linux run and PowerShell 5.1 on Windows.
 - `docs/` — design notes (`marketplace-plan.md`).
 - `install.* / sync.* / uninstall.*` — helpers for the manual hook path only
   (copy `plugins/conventions/hooks` ↔ `~/.claude/hooks`). Features install via
@@ -62,6 +67,9 @@ These hooks match on **content**, so they cannot tell prose from quotation:
   `plugins/conventions/hooks/cross-platform/check-american-english.ps1` and
   regenerate the `.sh` map (procedure in that directory's `README.md`), or edit
   both identically.
+- **Add hook test cases to the table, not the suite.** A cross-platform hook's
+  two runners share `tests/cases/*.tsv`; editing one suite covers one runner
+  and starts the drift the tables exist to prevent.
 - **Copy skills wholesale.** A skill is its whole `SKILL.md` + `references/` +
   `scripts/` tree, not just the `SKILL.md`.
 - **Respect the windows-only vs cross-platform hook split.** A hook that only

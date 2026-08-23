@@ -1,13 +1,13 @@
 # Pre-run hook: blocks Bash / PowerShell tool calls whose command discards
 # output to a null device. The user's global convention is to redirect to a
-# real file path or drop the redirection entirely — never to a null sink.
+# real file path or drop the redirection entirely - never to a null sink.
 #
 # This converts the rule from "Claude has to remember" into "the harness
 # enforces it." Mirrors check-american-english.ps1: it reads the tool-call JSON
 # from stdin and, on a match, exits with code 2 and writes a stderr message that
 # Claude sees and is expected to act on (rewrite the command, then retry).
 #
-# Installed user-globally — fires in every project on this machine.
+# Installed user-globally - fires in every project on this machine.
 # To audit / edit:
 #   - This file: ~/.claude/hooks/windows-only/check-no-null-redirect.ps1
 #   - Wired in ~/.claude/settings.json (user scope) under hooks.PreToolUse
@@ -62,7 +62,7 @@ $lines.Add("  $cmd")
 $lines.Add("")
 $lines.Add("Convention (Windows: no null-device redirects -- they leave stray 'nul' files):")
 $lines.Add("never use /dev/null, >nul, or nul. Redirect to a real file path, or drop the redirection entirely.")
-$lines.Add("(PowerShell's own `$null is fine — only the null *device* is blocked.)")
+$lines.Add("(PowerShell's own `$null is fine - only the null *device* is blocked.)")
 
 [Console]::Error.WriteLine([string]::Join("`n", $lines))
 exit 2

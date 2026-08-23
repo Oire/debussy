@@ -1,17 +1,17 @@
 # Pre-write hook: blocks Write/Edit/MultiEdit/NotebookEdit calls whose new
 # content contains British English spellings. The user's global convention
 # (this repo's CLAUDE.md, also installed as a user-global rule) is American
-# English throughout — comments, docs, plan files, identifiers, everything.
+# English throughout - comments, docs, plan files, identifiers, everything.
 #
 # This hook converts the rule from "Claude has to remember" into "the harness
 # enforces it." On a match it exits with code 2 and writes a stderr message
 # naming the offending words and their American equivalents; Claude sees the
 # message and is expected to fix the words and retry.
 #
-# Installed user-globally — fires in every project on this machine.
+# Installed user-globally - fires in every project on this machine.
 # To audit / edit:
 #   - This file: ~/.claude/hooks/cross-platform/check-american-english.ps1
-#   - The British → American word map is inline below (single source of
+#   - The British -> American word map is inline below (single source of
 #     truth). Add or remove entries by editing the $wordMap hashtable.
 #   - The hook is wired in ~/.claude/settings.json (user scope) under
 #     hooks.PreToolUse with matcher "Write|Edit|MultiEdit|NotebookEdit".
@@ -24,9 +24,9 @@
 
 $ErrorActionPreference = 'Stop'
 
-# Explicit British → American map. Word-boundary, case-insensitive matching.
+# Explicit British -> American map. Word-boundary, case-insensitive matching.
 # Prefer adding common forms (singular + plural + -ed + -ing) when adding a
-# new entry — the matcher uses exact words, not stems, on purpose to avoid
+# new entry - the matcher uses exact words, not stems, on purpose to avoid
 # false positives (raise, surprise, exercise etc. all LOOK British-ending
 # but are correct in both dialects).
 $wordMap = [ordered]@{
@@ -347,10 +347,10 @@ if ($targetPath) {
 
 # Collect the prose the tool is about to write. Each tool puts content in a
 # different place; we glob them all together and scan as a single blob.
-#   Write          → tool_input.content
-#   Edit           → tool_input.new_string
-#   MultiEdit      → tool_input.edits[].new_string
-#   NotebookEdit   → tool_input.new_source
+#   Write          -> tool_input.content
+#   Edit           -> tool_input.new_string
+#   MultiEdit      -> tool_input.edits[].new_string
+#   NotebookEdit   -> tool_input.new_source
 $parts = New-Object System.Collections.Generic.List[string]
 $toolInput = $payload.tool_input
 if ($null -ne $toolInput) {
@@ -402,7 +402,7 @@ if ($matchResults.Count -eq 0) {
 # when it appears many times.
 $hits = $matchResults | ForEach-Object { $_.Value.ToLowerInvariant() } | Sort-Object -Unique
 
-# Print the rejection message on stderr — that's the stream Claude sees on
+# Print the rejection message on stderr - that's the stream Claude sees on
 # a code-2 exit.
 $lines = New-Object System.Collections.Generic.List[string]
 $lines.Add("American-English convention violated. The content about to be written contains British spellings that need replacement first:")

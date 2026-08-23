@@ -1,121 +1,99 @@
 #!/usr/bin/env bash
 # Tests for plugins/conventions/hooks/cross-platform/check-git-guard.sh
+#
+# The cases live in tests/cases/git-guard.tsv and are shared with the
+# PowerShell suite (tests/test-git-guard.ps1), so the two runners are held to
+# exactly the same verdicts. Add a case to the table, not to this file.
 set -uo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 REPO_ROOT="$(dirname "$SCRIPT_DIR")"
 HOOK="$REPO_ROOT/plugins/conventions/hooks/cross-platform/check-git-guard.sh"
+CASES="$SCRIPT_DIR/cases/git-guard.tsv"
+
+# Guards against a reader bug that would silently run nothing and pass.
+MIN_CASES=50
 
 passed=0
 failed=0
+count=0
+skipped=0
 
 run_hook() { out="$(printf '%s' "$1" | bash "$HOOK" 2>&1)"; rc=$?; }
 
-assert_exit() {
-    local name="$1" want="$2"
-    if [ "$rc" = "$want" ]; then
-        echo "  PASS: $name (exit $rc)"; passed=$((passed + 1))
-    else
-        echo "  FAIL: $name -- expected exit $want, got $rc"; failed=$((failed + 1)); echo "    output: $out"
-    fi
-}
+pass() { echo "  PASS: $1"; passed=$((passed + 1)); }
+fail() { echo "  FAIL: $1"; failed=$((failed + 1)); echo "    output: $out"; }
+
+if [ ! -f "$HOOK" ]; then
+    echo "missing hook: $HOOK" >&2
+    exit 1
+fi
+if [ ! -f "$CASES" ]; then
+    echo "missing case table: $CASES" >&2
+    exit 1
+fi
 
 echo "testing check-git-guard.sh"
 echo "=========================="
 
-echo ""
-echo "-- staging named paths and committing is allowed"
-run_hook '{"tool_input":{"command":"git commit -m wip"}}';            assert_exit "git commit allowed" 0
-run_hook '{"tool_input":{"command":"git add src/foo.ts src/bar.ts"}}'; assert_exit "git add <paths> allowed" 0
-run_hook '{"tool_input":{"command":"git add ./src/foo.ts"}}';         assert_exit "git add ./path allowed" 0
-run_hook '{"tool_input":{"command":"git -C /tmp/x commit -m y"}}';    assert_exit "git -C path commit allowed" 0
-run_hook '{"tool_input":{"command":"git commit -m \"add the adder\""}}'; assert_exit "commit message wording allowed" 0
+while IFS=$'\t' read -r expect mode command label title <&3 || [ -n "${expect:-}" ]; do
+    case "$expect" in
+        '#>'*)
+            echo ""
+            echo "-- ${expect#\#> }"
+            continue
+            ;;
+        '#'* | '')
+            continue
+            ;;
+    esac
+
+    if [ "$mode" = parsed ] && [ -z "$(command -v jq || true)" ]; then
+        echo "  SKIP: $label (needs jq to extract the command)"
+        skipped=$((skipped + 1))
+        continue
+    fi
+
+    count=$((count + 1))
+
+    if [ "$mode" = json ] || [ "$mode" = parsed ]; then
+        # Only the double quotes need escaping: a '\n' in the table is already
+        # the JSON escape for a line break, and is meant to survive as one.
+        escaped=$(printf '%s' "$command" | sed 's/"/\\"/g')
+        run_hook "{\"tool_input\":{\"command\":\"$escaped\"}}"
+    else
+        # printf %b turns the table's '\n' into a real line break.
+        run_hook "$(printf '%b' "$command")"
+    fi
+
+    if [ "$rc" != "$expect" ]; then
+        fail "$label -- expected exit $expect, got $rc"
+        continue
+    fi
+
+    if [ -n "${title:-}" ]; then
+        case "$out" in
+            *"$title"*) pass "$label (exit $rc, $title)" ;;
+            *) fail "$label -- blocked, but not by '$title'" ;;
+        esac
+    else
+        pass "$label (exit $rc)"
+    fi
+done 3<"$CASES"
 
 echo ""
-echo "-- bulk staging is blocked"
-run_hook '{"tool_input":{"command":"git add -A"}}';                   assert_exit "git add -A blocked" 2
-run_hook '{"tool_input":{"command":"git add ."}}';                    assert_exit "git add . blocked" 2
-run_hook '{"tool_input":{"command":"git add --all"}}';                assert_exit "git add --all blocked" 2
-run_hook '{"tool_input":{"command":"git commit -am wip"}}';           assert_exit "git commit -am blocked" 2
-run_hook '{"tool_input":{"command":"git commit -a -m wip"}}';         assert_exit "git commit -a blocked" 2
-
-echo ""
-echo "-- plain pushing is allowed"
-run_hook '{"tool_input":{"command":"git push"}}';                     assert_exit "git push allowed" 0
-run_hook '{"tool_input":{"command":"git push origin master"}}';       assert_exit "git push origin allowed" 0
-run_hook '{"tool_input":{"command":"git -C /tmp/x push"}}';           assert_exit "git -C path push allowed" 0
-run_hook '{"tool_input":{"command":"git push -u origin feature"}}';   assert_exit "git push -u allowed" 0
-run_hook '{"tool_input":{"command":"git push --set-upstream origin f"}}'; assert_exit "git push --set-upstream allowed" 0
-run_hook '{"tool_input":{"command":"git push --follow-tags"}}';       assert_exit "git push --follow-tags allowed" 0
-run_hook '{"tool_input":{"command":"git push --tags origin"}}';       assert_exit "git push --tags allowed" 0
-run_hook '{"tool_input":{"command":"git push -n origin master"}}';    assert_exit "git push -n allowed" 0
-run_hook '{"tool_input":{"command":"git push origin HEAD:refs/heads/x"}}'; assert_exit "git push refspec allowed" 0
-
-echo ""
-echo "-- pushes that rewrite or delete published history are blocked"
-run_hook '{"tool_input":{"command":"git push --force"}}';             assert_exit "git push --force blocked" 2
-run_hook '{"tool_input":{"command":"git push -f origin master"}}';    assert_exit "git push -f blocked" 2
-run_hook '{"tool_input":{"command":"git push --force-with-lease"}}';  assert_exit "git push --force-with-lease blocked" 2
-run_hook '{"tool_input":{"command":"git push origin +master"}}';      assert_exit "git push +refspec blocked" 2
-run_hook '{"tool_input":{"command":"git push --delete origin old"}}'; assert_exit "git push --delete blocked" 2
-run_hook '{"tool_input":{"command":"git push -d origin old"}}';       assert_exit "git push -d blocked" 2
-run_hook '{"tool_input":{"command":"git push --mirror origin"}}';     assert_exit "git push --mirror blocked" 2
-run_hook '{"tool_input":{"command":"git push --prune origin"}}';      assert_exit "git push --prune blocked" 2
-run_hook '{"tool_input":{"command":"git push -fu origin master"}}';   assert_exit "git push -fu blocked" 2
-
-echo ""
-echo "-- history rewriting is blocked"
-run_hook '{"tool_input":{"command":"git commit --amend -m x"}}';      assert_exit "git commit --amend blocked" 2
-run_hook '{"tool_input":{"command":"git rebase master"}}';            assert_exit "git rebase blocked" 2
-
-echo ""
-echo "-- discarding work is blocked"
-run_hook '{"tool_input":{"command":"git reset --hard HEAD"}}';        assert_exit "git reset --hard blocked" 2
-run_hook '{"tool_input":{"command":"git restore src/foo.ts"}}';       assert_exit "git restore blocked" 2
-run_hook '{"tool_input":{"command":"git checkout -- src/foo.ts"}}';   assert_exit "git checkout -- <path> blocked" 2
-run_hook '{"tool_input":{"command":"git checkout -f main"}}';         assert_exit "git checkout -f blocked" 2
-run_hook '{"tool_input":{"command":"git clean -fd"}}';                assert_exit "git clean -fd blocked" 2
-
-echo ""
-echo "-- their non-destructive neighbors are allowed"
-run_hook '{"tool_input":{"command":"git reset --soft HEAD~1"}}';      assert_exit "git reset --soft allowed" 0
-run_hook '{"tool_input":{"command":"git checkout my-feature"}}';      assert_exit "git checkout <branch> allowed" 0
-run_hook '{"tool_input":{"command":"git checkout -b new-branch"}}';   assert_exit "git checkout -b allowed" 0
-run_hook '{"tool_input":{"command":"git clean -n"}}';                 assert_exit "git clean -n allowed" 0
-run_hook '{"tool_input":{"command":"git add -u"}}';                   assert_exit "git add -u allowed" 0
-
-echo ""
-echo "-- file operations are blocked"
-run_hook '{"tool_input":{"command":"git mv a b"}}';                   assert_exit "git mv blocked" 2
-run_hook '{"tool_input":{"command":"git rm old.txt"}}';               assert_exit "git rm blocked" 2
-
-echo ""
-echo "-- read-only git and non-git commands are untouched"
-run_hook '{"tool_input":{"command":"git status"}}';                   assert_exit "git status allowed" 0
-run_hook '{"tool_input":{"command":"git diff --stat"}}';              assert_exit "git diff allowed" 0
-run_hook '{"tool_input":{"command":"git log --oneline"}}';            assert_exit "git log allowed" 0
-run_hook '{"tool_input":{"command":"echo legitimate adder"}}';        assert_exit "non-git lookalike allowed" 0
-run_hook '';                                                          assert_exit "empty input allowed" 0
-
-echo ""
-echo "-- same verdicts on the extracted-command path (what jq hands over)"
-# Without jq the hook scans the raw JSON payload, so a flag is followed by a
-# quote; with jq it sees the bare command, where the flag ends the string. Both
-# have to reach the same verdict, or the guard silently loosens on one of them.
-run_hook 'git add -A';                                                assert_exit "bare: git add -A blocked" 2
-run_hook 'git add .';                                                 assert_exit "bare: git add . blocked" 2
-run_hook 'git clean -fd';                                             assert_exit "bare: git clean -fd blocked" 2
-run_hook 'git checkout -- src/foo.ts';                                assert_exit "bare: git checkout -- blocked" 2
-run_hook 'git push -f origin master';                                 assert_exit "bare: git push -f blocked" 2
-run_hook 'git push --force';                                          assert_exit "bare: git push --force blocked" 2
-run_hook 'git add .gitignore';                                        assert_exit "bare: git add .gitignore allowed" 0
-run_hook 'git add src/foo.ts';                                        assert_exit "bare: git add <path> allowed" 0
-run_hook 'git commit -m wip';                                         assert_exit "bare: git commit allowed" 0
-run_hook 'git push origin master';                                    assert_exit "bare: git push allowed" 0
-run_hook 'git push -u origin feature';                                assert_exit "bare: git push -u allowed" 0
+echo "-- degenerate input"
+run_hook ''
+if [ "$rc" = 0 ]; then pass "empty input allowed (exit $rc)"; else fail "empty input allowed"; fi
+run_hook 'not json at all'
+if [ "$rc" = 0 ]; then pass "non-JSON, non-git input allowed (exit $rc)"; else fail "non-JSON input allowed"; fi
 
 echo ""
 echo "=========================="
-echo "results: $passed passed, $failed failed"
+if [ "$count" -lt "$MIN_CASES" ]; then
+    echo "only $count cases read from $CASES (expected at least $MIN_CASES) -- the table or its reader is broken"
+    exit 1
+fi
+echo "results: $passed passed, $failed failed, $skipped skipped ($count table cases run)"
 [ "$failed" -gt 0 ] && exit 1
 exit 0
