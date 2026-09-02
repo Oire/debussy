@@ -48,7 +48,6 @@
 #> pushes that rewrite or delete published history are blocked
 2	json	git push --force	git push --force	Destructive git push blocked
 2	json	git push -f origin master	git push -f	Destructive git push blocked
-2	json	git push --force-with-lease	git push --force-with-lease	Destructive git push blocked
 2	json	git push origin +master	git push +refspec	Destructive git push blocked
 2	json	git push --delete origin old	git push --delete	Destructive git push blocked
 2	json	git push -d origin old	git push -d	Destructive git push blocked
@@ -56,9 +55,28 @@
 2	json	git push --prune origin	git push --prune	Destructive git push blocked
 2	json	git push -fu origin master	git push -fu	Destructive git push blocked
 
-#> history rewriting is blocked
-2	json	git commit --amend -m x	git commit --amend	git commit --amend blocked
-2	json	git rebase master	git rebase	git rebase blocked
+#> a leased force-push is allowed - it checks the remote before overwriting
+0	json	git push --force-with-lease	git push --force-with-lease
+0	json	git push --force-with-lease origin feature	git push --force-with-lease <remote>
+0	json	git push --force-with-lease=feature	git push --force-with-lease=<ref>
+0	json	git push --force-if-includes --force-with-lease	git push --force-if-includes
+0	json	git -C /tmp/x push --force-with-lease	git -C path push --force-with-lease
+
+#> rebasing and amending are allowed - ORIG_HEAD and the reflog undo them
+0	json	git rebase master	git rebase <upstream>
+0	json	git rebase --onto master~2 feature	git rebase --onto
+0	json	git rebase --continue	git rebase --continue
+0	json	git rebase --abort	git rebase --abort
+0	json	git rebase --ignore-date master	git rebase --ignore-date
+0	json	git pull --rebase origin master	git pull --rebase
+0	json	git commit --amend -m x	git commit --amend
+0	json	git commit --amend --no-edit	git commit --amend --no-edit
+
+#> an interactive rebase is blocked - there is no editor to drive its todo list
+2	json	git rebase -i HEAD~3	git rebase -i	Interactive git rebase blocked
+2	json	git rebase --interactive master	git rebase --interactive	Interactive git rebase blocked
+2	json	git rebase -i --onto master feature	git rebase -i --onto	Interactive git rebase blocked
+2	json	git rebase --autosquash -i master	git rebase --autosquash -i	Interactive git rebase blocked
 
 #> discarding work is blocked
 2	json	git reset --hard HEAD	git reset --hard	git reset --hard blocked
@@ -91,6 +109,10 @@
 2	bare	git checkout -- src/foo.ts	bare: git checkout --	Destructive git checkout blocked
 2	bare	git push -f origin master	bare: git push -f	Destructive git push blocked
 2	bare	git push --force	bare: git push --force	Destructive git push blocked
+2	bare	git rebase -i HEAD~3	bare: git rebase -i	Interactive git rebase blocked
+0	bare	git push --force-with-lease	bare: git push --force-with-lease
+0	bare	git rebase master	bare: git rebase
+0	bare	git commit --amend -m x	bare: git commit --amend
 0	bare	git add .gitignore	bare: git add .gitignore
 0	bare	git add src/foo.ts	bare: git add <path>
 0	bare	git commit -m wip	bare: git commit

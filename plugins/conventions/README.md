@@ -9,10 +9,11 @@ opt-in: enable this plugin only if you want them.
 - **`check-american-english`** (cross-platform) — blocks writes containing
   non-American spellings, naming each word and its American replacement.
 - **`check-git-guard`** (cross-platform) — blocks git writes that destroy work:
-  force/deleting/mirroring `push`, `commit --amend`, `rebase`, `reset --hard`,
-  `restore`, destructive `checkout`, `clean -f`, bulk staging (`add -A`,
-  `commit -a`), and `git mv`/`git rm`. Staging named paths, committing, and a
-  plain `push` are allowed.
+  bare force/deleting/mirroring `push`, `reset --hard`, `restore`, destructive
+  `checkout`, `clean -f`, bulk staging (`add -A`, `commit -a`), `git mv`/`git
+  rm`, and `rebase -i` (no editor to drive it). Staging named paths,
+  committing, amending, a plain or `--force-with-lease` `push`, and a
+  non-interactive `rebase` are allowed.
 - **`check-no-null-redirect`** (Windows-only) — blocks null-device redirects,
   which on Windows leave stray `nul` files. **Not auto-wired** (see below).
 

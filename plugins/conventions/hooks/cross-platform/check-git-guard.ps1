@@ -1,15 +1,24 @@
 # Pre-run hook: blocks the git WRITE operations Claude must not perform.
 #
 # The dividing line is whether the user can undo it. A local commit comes back
-# with 'git reset --soft HEAD~1' and a pushed commit comes back with a revert,
-# so Claude may stage explicitly named paths, commit, and push. Everything that
-# destroys work - locally or on the remote - is blocked:
+# with 'git reset --soft HEAD~1', a pushed commit comes back with a revert, and
+# a rebase comes back with 'git reset --hard ORIG_HEAD', so Claude may stage
+# explicitly named paths, commit, amend, rebase, and push - with a lease when
+# the branch was rewritten. Everything that destroys work outright - locally or
+# on the remote - is blocked:
 #
 #   push --force / -f, -d /
 #   --delete, --mirror,
-#   --prune, +refspec           rewriting or deleting published history. A
-#                               plain push only adds to it, so it is allowed.
-#   commit --amend, rebase      history rewriting.
+#   --prune, +refspec           rewriting or deleting published history with
+#                               nothing to check first. A plain push only adds
+#                               to it, and --force-with-lease refuses to run
+#                               when the remote holds a commit it has not seen,
+#                               so both of those are allowed.
+#   rebase -i                   needs an interactive editor this harness cannot
+#                               drive: it would hang, not run. A
+#                               non-interactive rebase is allowed - what it
+#                               rewrites is recoverable from ORIG_HEAD and the
+#                               reflog, and stacked branches need it.
 #   reset --hard, restore,
 #   checkout -- / -f, clean -f  discard work with nothing to recover it from.
 #   add -A / . / --all,
@@ -65,22 +74,25 @@ function Add-Rule([string]$pattern, [string]$title, [string[]]$advice) {
 }
 
 # A plain push only adds commits to the remote, and a bad one is undone with a
-# revert. These variants rewrite or delete what is already published, which no
-# amount of local work brings back. '--force' is matched as a prefix on purpose,
-# so '--force-with-lease' and '--force-if-includes' are caught too: the lease
-# makes the race safe, not the history rewrite.
-Add-Rule "push$arg(--force|--delete|--mirror|--prune|\+)" "Destructive git push blocked" @(
-    "Force-pushing, deleting a remote branch, mirroring, or pruning rewrites or",
-    "removes published history - the user cannot get it back.",
-    "A plain 'git push' is allowed. Say what you would have force-pushed and",
-    "let the user do it."
+# revert. These variants rewrite or delete what is already published without
+# looking at it first, which no amount of local work brings back. '--force' is
+# matched as a whole token, so '--force-with-lease' and '--force-if-includes'
+# get through: a lease turns a blind overwrite into a checked one, refusing the
+# push when the remote carries a commit the local repo has never seen. That is
+# the difference between losing someone else's work and rewriting your own.
+Add-Rule "push$arg(--force$tok|--delete|--mirror|--prune|\+)" "Destructive git push blocked" @(
+    "A bare '--force' overwrites whatever is on the remote, including a commit",
+    "pushed by someone else; --delete, --mirror and --prune remove published",
+    "history outright. None of it comes back.",
+    "'git push --force-with-lease' is allowed and does the same job safely -",
+    "use it, after a plain 'git fetch', for a branch you rebased."
 )
 
 Add-Rule "push$arg-[A-Za-z]*[fd][A-Za-z]*$tok" "Destructive git push blocked" @(
-    "'-f' force-pushes and '-d' deletes a remote branch; both rewrite or remove",
-    "published history, which the user cannot get back.",
-    "A plain 'git push' is allowed. Say what you would have force-pushed and",
-    "let the user do it."
+    "'-f' force-pushes blindly and '-d' deletes a remote branch; both rewrite",
+    "or remove published history, which the user cannot get back.",
+    "'git push --force-with-lease' is allowed: it refuses to overwrite a commit",
+    "the local repo has not seen. Use that instead of '-f'."
 )
 
 Add-Rule "(mv|rm)\b" "git mv / git rm blocked" @(
@@ -88,14 +100,18 @@ Add-Rule "(mv|rm)\b" "git mv / git rm blocked" @(
     "deletions are not coupled to git's index."
 )
 
-Add-Rule "commit$arg--amend$tok" "git commit --amend blocked" @(
-    "Amending rewrites history. Make a new commit instead, or tell the user",
-    "what the previous commit got wrong and let them amend it."
-)
-
-Add-Rule "rebase\b" "git rebase blocked" @(
-    "Rebasing rewrites history. Leave the branch as it is and tell the user",
-    "what you would have rebased onto."
+# A rebase is allowed: it rewrites history, but the pre-rebase tip is left in
+# ORIG_HEAD and the reflog, so the branch comes back with 'git reset --hard
+# ORIG_HEAD'. What is blocked is the interactive one, because this harness has
+# no terminal to hand the todo editor - '-i' would sit there waiting instead of
+# doing anything.
+Add-Rule "rebase$arg(-[A-Za-z]*i[A-Za-z]*|--interactive)$tok" "Interactive git rebase blocked" @(
+    "'git rebase -i' opens an editor for the todo list, and this harness cannot",
+    "drive one - the command would hang rather than rebase.",
+    "A non-interactive rebase is allowed: 'git rebase <upstream>',",
+    "'git rebase --onto <a> <b>', and --continue / --abort / --skip.",
+    "For a squash or a reword, say what you would have done and let the user",
+    "run the interactive rebase."
 )
 
 Add-Rule "reset$arg--hard$tok" "git reset --hard blocked" @(

@@ -102,8 +102,8 @@ commits. Everything that destroys work — locally or on the remote — is block
 
 | Blocked | Why |
 | --- | --- |
-| `git push --force` / `-f` (including `--force-with-lease`), `--delete` / `-d`, `--mirror`, `--prune`, `+refspec` | Rewrite or delete published history. A plain `git push` only adds to it, so it is allowed. |
-| `git commit --amend`, `git rebase` | History rewriting. |
+| `git push --force` / `-f`, `--delete` / `-d`, `--mirror`, `--prune`, `+refspec` | Overwrite or delete published history without checking it first. A plain `git push` only adds to it, and `--force-with-lease` looks before it overwrites, so both are allowed. |
+| `git rebase -i` / `--interactive` | Needs an editor for the todo list, which this harness cannot drive — it would hang rather than run. A non-interactive rebase is allowed. |
 | `git reset --hard`, `git restore`, `git checkout -- <path>` / `-f`, `git clean -f` | Discard work with nothing to recover it from. |
 | `git add -A` / `.` / `--all`, `git commit -a` | Bulk staging — name the paths instead, so nothing is staged that Claude hasn't looked at. |
 | `git mv`, `git rm` | Use plain `mv` / `rm` / rename, so moves and deletions aren't coupled to git's index. |
@@ -115,14 +115,33 @@ bulk-staging block is the other half of that bargain — the reason a commit is
 safe to let Claude make is that Claude named every path going into it, and the
 reason a push is safe to let Claude make is that it only ever adds commits.
 
-`--force` is matched as a prefix on purpose, so `--force-with-lease` and
-`--force-if-includes` are blocked too: the lease makes the race safe, not the
-history rewrite.
+`--force` is matched as a whole token, so `--force-with-lease` and
+`--force-if-includes` get through. The lease is the difference the guard cares
+about: a bare `--force` overwrites the remote branch sight unseen, including a
+commit a colleague pushed five minutes ago, while a leased push refuses to run
+at all unless the remote is still where the local repo last saw it. What is
+left is a rewrite of your own history, which the reflog holds onto.
+
+Rebasing and amending are allowed for the same reason. Both rewrite history,
+but the pre-rebase tip stays in `ORIG_HEAD` and the reflog, so
+`git reset --hard ORIG_HEAD` puts the branch back — that is a different
+category from `restore` or `clean -f`, which delete content git never had a
+copy of. Stacked pull requests need both: rebase the branch onto its updated
+parent, then push the result with a lease.
+
+> [!NOTE]
+> A lease is only as good as what the local repo has seen. `git fetch` updates
+> the remote-tracking ref that `--force-with-lease` compares against, so a
+> fetch run between reviewing the branch and pushing it silently renews the
+> lease over commits you never looked at. Add `--force-if-includes` (git 2.30+)
+> to also require that those commits are in what you are pushing.
 
 The non-destructive neighbors of the blocked commands stay available:
 `git push` (plus `-u`, `--set-upstream`, `--tags`, `--follow-tags`, `-n`),
-`git reset --soft`, `git checkout <branch>`, `git checkout -b`, `git clean -n`,
-`git add -u`, and every read-only verb (`status`, `diff`, `log`, …).
+`git rebase <upstream>` / `--onto` / `--continue` / `--abort` / `--skip`,
+`git commit --amend`, `git reset --soft`, `git checkout <branch>`,
+`git checkout -b`, `git clean -n`, `git add -u`, and every read-only verb
+(`status`, `diff`, `log`, …).
 
 It allows `git -C <path>` and global flags before the subcommand. Flags are
 matched as whole tokens, so `git add .` is blocked while `git add .gitignore`
@@ -134,8 +153,9 @@ message that happens to mention discarding changes.
 
 There is deliberately nothing to configure. If you want Claude out of git
 entirely, turn the hook off with `/hooks`. The older, narrower behaviors are
-still available by pinning an earlier version: conventions 0.4.x blocked every
-`push`, and 0.3.x blocked `add`/`stage`/`commit` outright.
+still available by pinning an earlier version: conventions 0.5.x blocked every
+rebase, amend and leased push, 0.4.x blocked every `push`, and 0.3.x blocked
+`add`/`stage`/`commit` outright.
 
 ### check-no-null-redirect (Windows-only)
 

@@ -5,6 +5,46 @@ All notable changes to this repo are recorded here. Format loosely follows
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-09-02
+
+### Changed
+- **conventions:** `check-git-guard` now allows the three operations a stacked
+  branch cannot be maintained without — `git rebase`, `git commit --amend`, and
+  `git push --force-with-lease`. Stacked pull requests conflict by
+  construction: when the parent branch merges or moves, every branch above it
+  has to be replayed onto the new base and re-pushed. The old guard left that
+  entirely to the user, on every branch, in every repo.
+
+  The reversibility test the guard is built on turns out to allow all three.
+  A rebase and an amend rewrite history, but they do not destroy it: the
+  pre-rebase tip stays in `ORIG_HEAD` and the reflog, so
+  `git reset --hard ORIG_HEAD` puts the branch back. That is a different
+  category from `restore` or `clean -f`, which delete content git never held a
+  copy of.
+
+  `--force-with-lease` is the same distinction on the remote. `--force` is now
+  matched as a whole token rather than as a prefix, so the leased variants get
+  through. A bare `--force` overwrites the remote branch sight unseen —
+  including a commit a colleague pushed a minute ago — while a leased push
+  refuses to run unless the remote is still where the local repo last saw it.
+  What is left is a rewrite of your own history.
+
+  Still blocked: bare `--force` / `-f`, `--delete` / `-d`, `--mirror`,
+  `--prune`, `+refspec`, `reset --hard`, `restore`, destructive `checkout`,
+  `clean -f`, bulk staging, and `git mv` / `git rm`.
+
+  Newly blocked: `git rebase -i` / `--interactive`. Not on reversibility
+  grounds — an interactive rebase waits on an editor for its todo list, and the
+  harness has no terminal to give it, so the command hangs instead of running.
+  A block that says so beats a stalled session. The long rebase flags that
+  merely contain an `i` (`--ignore-date`, `--ignore-whitespace`) are matched as
+  whole tokens and stay allowed.
+
+  Caveat now documented in the hook README: a lease is only as good as what the
+  local repo has seen, since `git fetch` renews it against commits nobody
+  looked at. `--force-if-includes` (git 2.30+) closes that gap and is allowed
+  alongside the lease.
+
 ### Added
 - **CI:** the workflow now tests what the repo actually ships. It ran green on
   every commit while covering one shell on one operating system; the
@@ -54,6 +94,17 @@ All notable changes to this repo are recorded here. Format loosely follows
 - **CI:** the frontmatter validator printed its success line after
   `sys.exit()`, so it never ran, and it skipped any path containing `.git` —
   which includes `.github`. Both are gone with the inline script.
+
+### Notes
+- `conventions` plugin bumped to 0.6.0 (hook behavior changed); marketplace
+  bumped to 0.7.0. Other plugin versions unchanged.
+- The git relaxation widens what Claude may do to history it can put back, and
+  nothing else. If you want the previous behavior — no rebase, no amend, no
+  leased push — stay on conventions 0.5.x.
+- The git-guard case table grows from 58 cases to 76: the allowed rebase,
+  amend and leased-push forms, the interactive rebase that is still blocked,
+  and regression cases for the near misses (`--force-if-includes`,
+  `--ignore-date`, `git pull --rebase`).
 
 ## [0.6.0] - 2026-08-23
 
