@@ -23,6 +23,15 @@ Project review and release-readiness auditing.
 
 The skill calls the agent, so they are packaged together.
 
+For a project that renders HTML, Nigel measures the running page with a bundled
+scanner (`scripts/web-scan/`) instead of judging from source: axe-core inside
+every iframe, the accessibility tree as the browser computes it, contrast
+against the composited background, the real Tab order with focus traps and
+focus hidden under sticky content, reflow at real zoom sizes, text spacing, and
+target size. It runs in Chromium's headless shell, which never shows a window.
+Its toolchain (Playwright, axe-core, the headless shell; about 150 MB) installs
+once into the plugin's data directory on first use.
+
 Nigel ends every review with a coverage list: for an app with a user interface,
 a verdict on every WCAG 2.2 AA criterion (fails, passes, not applicable, or not
 tested), and for other areas what was checked and found fine. It opens no

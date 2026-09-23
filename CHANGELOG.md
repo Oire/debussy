@@ -5,6 +5,33 @@ All notable changes to this repo are recorded here. Format loosely follows
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-09-23
+
+Plugins: review 0.4.0.
+
+### Added
+- **Nigel measures web UIs in a real browser.** A bundled scanner
+  (`plugins/review/scripts/web-scan/`) runs in Chromium's headless shell, which
+  never shows a window, and gathers evidence rather than verdicts:
+  - axe-core violations in the page and in every visible iframe;
+  - the accessibility tree as the browser computes it, with landmarks and
+    headings;
+  - text contrast against the composited background, flagged where an image,
+    gradient, filter, or blend mode makes the number uncertain;
+  - the real Tab order: stops with no visible focus change, stops hidden under
+    sticky or fixed content (2.4.11), and focus traps;
+  - reflow at the viewport a browser zoom actually produces, text clipped
+    inside overflow-hidden boxes, and text drawn over text;
+  - the 1.4.12 text-spacing overrides, reporting only what they break;
+  - pointer targets under 24 pixels that also fail the spacing exception
+    (2.5.8).
+
+  `setup.mjs` installs Playwright, axe-core, and the headless shell once into
+  the plugin's data directory (about 150 MB). A new
+  `references/project-analyst/web-checks.md` tells Nigel how to run it and
+  which browser checks mislead. Nigel's skeptic now treats a finding that rests
+  only on a script's say-so as unconfirmed.
+
 ## [0.11.0] - 2026-09-23
 
 Plugins: review 0.3.0, planning 0.3.1, write-manual 0.4.1.

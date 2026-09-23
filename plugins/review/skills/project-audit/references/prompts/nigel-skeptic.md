@@ -13,6 +13,9 @@ surrounding code, configuration, and documentation to know whether it holds.
   finding you can't see, a behavior that needs the app running). Say what would
   settle it.
 
-A finding you can't verify is suspected, not confirmed. Don't modify any files.
+A finding you can't verify is suspected, not confirmed. A finding that rests on
+a scanner or script result is confirmed only when its evidence shows the
+behavior itself (a screenshot, a key sequence, the measured values), not just the
+script's say-so. Don't modify any files.
 
 FINDINGS

@@ -83,9 +83,12 @@ for the first time, and don't assume anyone has checked it.
 user may work with a screen reader, and a window that opens takes focus away
 from whatever they are doing. So:
 
-- A web app is checked in Playwright's headless shell, which never shows a
-  window: screenshots at several viewport widths, plus the 200% zoom case.
-  That needs no permission.
+- A web app is checked in Chromium's headless shell, which never shows a
+  window and needs no permission. Use the bundled scanner rather than
+  improvising probes: read `${CLAUDE_PLUGIN_ROOT}/references/project-analyst/web-checks.md`
+  first. It covers setup, what each command measures (axe inside iframes, the
+  real Tab order with traps and hidden focus, composited contrast, reflow at
+  real zoom sizes, text spacing, target size), and the checks that mislead.
 - A desktop app, or a browser mode that shows a window, runs only when your
   prompt says windows are allowed. Then launch it, capture its window with
   PowerShell (`System.Drawing` and `CopyFromScreen` on the window bounds),
