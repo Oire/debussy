@@ -5,6 +5,36 @@ All notable changes to this repo are recorded here. Format loosely follows
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-09-23
+
+Plugins: review 0.3.0, planning 0.3.1, write-manual 0.4.1.
+
+### Fixed
+- **Nigel and write-manual opened windows without asking.** A launched desktop
+  app, or a browser that is not headless, takes focus from whatever the user is
+  doing, which with a screen reader means losing your place. Nigel now runs web
+  checks in Playwright's headless shell and opens a window only when its prompt
+  allows it. project-audit asks once, up front, and passes the answer to every
+  Nigel. write-manual says what will open and for how long before each launch,
+  and treats every launch as needing its own yes. Adapted from monet's
+  a11y-audit, which learned it on a real audit.
+
+### Added
+- **Nigel reports its coverage.** Every review ends with what was checked. For
+  an app with a user interface, each WCAG 2.2 AA criterion gets a verdict:
+  fails, passes, not applicable, or not tested. For other areas, what was
+  checked and found fine. Not-tested criteria are how whole areas get missed,
+  since no scan flags them; project-audit lists them at triage.
+- **Resume by name.** write-manual answers to "continue the manual" and plan-exec
+  to "resume the plan", picking up from their progress files.
+
+### Changed
+- Nigel reports a defect repeated in many places as one finding listing its
+  places.
+- Counts in user-facing output are written as a sentence ("seven serious, three
+  moderate") rather than a column of numbers.
+- CLAUDE.md says which of the three Oire marketplaces a plugin belongs in.
+
 ## [0.10.0] - 2026-09-23
 
 Plugins: planning 0.3.0, review 0.2.1, write-manual 0.4.0.

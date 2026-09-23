@@ -1,6 +1,6 @@
 ---
 name: plan-exec
-description: "Execute an implementation plan from docs/plans/ task by task in isolated subagents, review the result, and open a pull request. Use when the user says 'plan-exec', 'execute plan', 'run plan', 'implement the plan', or wants a plan file carried out."
+description: "Execute an implementation plan from docs/plans/ task by task in isolated subagents, review the result, and open a pull request. Use when the user says 'plan-exec', 'execute plan', 'run plan', 'implement the plan', or wants a plan file carried out. Also use to pick up an interrupted run: 'continue the plan', 'resume the plan', 'resume plan-exec'."
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bash:*), Bash(git status:*), Bash(git fetch:*), Bash(git switch:*), Bash(git add:*), Bash(git commit:*), Bash(git push -u origin:*), Bash(git diff:*), Bash(git log:*), Bash(git rev-parse:*), Bash(git symbolic-ref:*), Bash(gh auth status), Bash(gh pr create:*), Agent, Workflow, AskUserQuestion, TaskCreate, TaskUpdate
 ---
 
@@ -16,7 +16,7 @@ The run is done when:
 
 You are the orchestrator. Code work happens in subagents so your own context stays small over a long run. You track task numbers, retries, and review results, and you do not read or fix code yourself.
 
-Write plain prose and short bullet lists to the user, and keep that in every prompt you pass on: no ASCII tables, diagrams, or box drawing.
+Write plain prose and short bullet lists to the user, and keep that in every prompt you pass on: no ASCII tables, diagrams, or box drawing. Give counts in a sentence ("four confirmed, two refuted"), not as a column of numbers.
 
 ## When to stop and ask
 

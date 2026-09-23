@@ -1,6 +1,6 @@
 ---
 name: write-manual
-description: "Write comprehensive, accessible user manuals for desktop applications. Multi-agent pipeline: Haiku scouts extract facts from code, Sonnet synthesizes research, Opus writes the manual, Sonnet verifies accuracy and WCAG compliance, Sonnet translates to target languages. Use when user says 'write-manual', 'write manual', 'write a manual', 'write help file', 'write user manual', 'update manual', 'update help file', 'generate manual', or wants to create/update product documentation."
+description: "Write comprehensive, accessible user manuals for desktop applications. Multi-agent pipeline: Haiku scouts extract facts from code, Sonnet synthesizes research, Opus writes the manual, Sonnet verifies accuracy and WCAG compliance, Sonnet translates to target languages. Use when user says 'write-manual', 'write manual', 'write a manual', 'write help file', 'write user manual', 'update manual', 'update help file', 'generate manual', or wants to create/update product documentation. Also use to pick up a started run: 'continue the manual', 'resume the manual', 'where did we get to on the manual'."
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash, Agent, AskUserQuestion
 ---
 
@@ -14,7 +14,7 @@ Write comprehensive, accessible, WCAG 2.2 AA compliant user manuals for desktop 
 
 ## Accessibility-friendly output
 
-Use plain prose and simple bullet lists in user-visible output, with no ASCII diagrams, tables, box-drawing characters, or pseudographics.
+Use plain prose and simple bullet lists in user-visible output, with no ASCII diagrams, tables, box-drawing characters, or pseudographics. Give counts in a sentence ("three critical, five minor"), not as a column of numbers.
 
 ## Output format
 
@@ -87,7 +87,7 @@ No agents needed — the orchestrator does this directly.
 6. **Find source directories**: identify where UI code, config, services, and localization files live from the project structure in CLAUDE.md.
 7. **Find glossary files**: check `HELP_DIR/glossaries/` for `base.json` and any `<lang>.json` files. A missing base glossary is created after Step 4; missing language glossaries grow from the terms translators flag.
 8. **Branch** per the Git section above.
-9. **Screenshots (optional).** Ask the user once whether the app can be launched here. If yes, build and run it, then capture the main window and each dialog you can reach to `help/.screenshots/` (on Windows, a PowerShell screen capture of the app window works; name each file after the window). Read them yourself to confirm they show what you expect. Screenshots are evidence of real layout, control order, and labels, which code alone only implies. If the app can't be launched, skip this; the scouts work from code either way.
+9. **Screenshots (optional).** A launched app opens windows that take focus from whatever the user is doing, which matters with a screen reader. So ask the user once whether the app may be launched here, and before each launch say what will open and roughly how long it will stay open, then wait for a yes; approval for one launch does not carry over to the next. Batch every capture into as few launches as possible. With a yes, build and run it, then capture the main window and each dialog you can reach to `help/.screenshots/` (on Windows, a PowerShell screen capture of the app window works; name each file after the window). Read them yourself to confirm they show what you expect. Screenshots are evidence of real layout, control order, and labels, which code alone only implies. If the app can't be launched, skip this; the scouts work from code either way.
 
 Report to the user:
 - Product name and description (from CLAUDE.md/README)

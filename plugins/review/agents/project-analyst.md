@@ -79,13 +79,23 @@ The lead developer may be blind or have low vision, so visual problems can go
 unnoticed for a long time. Audit the look of the app as a sighted user seeing it
 for the first time, and don't assume anyone has checked it.
 
-**Look at the real thing when you can.** If the app can be built and run here,
-run it and take screenshots, then Read the PNG files: Playwright for web apps
-(several viewport widths, plus the 200% zoom case); for a Windows desktop app,
-launch it and capture its window with PowerShell (`System.Drawing` and
-`CopyFromScreen` on the window bounds), opening each main dialog in turn. Close
-what you launched. If you can't run it, say so and mark every visual finding
-**suspected** — inferred from layout code, not seen.
+**Look at the real thing when you can, without taking the user's screen.** The
+user may work with a screen reader, and a window that opens takes focus away
+from whatever they are doing. So:
+
+- A web app is checked in Playwright's headless shell, which never shows a
+  window: screenshots at several viewport widths, plus the 200% zoom case.
+  That needs no permission.
+- A desktop app, or a browser mode that shows a window, runs only when your
+  prompt says windows are allowed. Then launch it, capture its window with
+  PowerShell (`System.Drawing` and `CopyFromScreen` on the window bounds),
+  open each main dialog in turn, batch everything into one session, and close
+  what you launched.
+- Without that permission, or when the app can't be run here, say so and mark
+  every visual finding **suspected**: inferred from layout code, not seen.
+
+Read the PNG files you captured; a screenshot you didn't look at is not
+evidence.
 
 What to look for: inconsistent margins and padding, misaligned controls, mixed
 fonts and sizes, clashing or default-gray color schemes, unclear visual hierarchy,
@@ -156,8 +166,22 @@ Each finding gives:
   **suspected** (inferred and not verified; say what would confirm it).
 - **Why it matters** and **Fix** — a specific, actionable recommendation.
 
+One defect repeated in many places is one finding listing its places, not a
+finding per place. Different defects in one component are separate findings.
+
+End with **Coverage**, so an empty section reads as "checked and fine" rather
+than "never looked at":
+- For an app with a user interface, go through every WCAG 2.2 AA success
+  criterion. Mark each one as fails (with the findings), passes (with what you
+  checked), not applicable (with why), or not tested (with what blocked you).
+  The criteria that turn out never tested are how whole areas get missed: no
+  scan flags them, so nothing prompts the question.
+- For the other areas you covered, list what you checked and found fine, in a
+  line each.
+
 Write plain prose and bullet lists: no tables, ASCII diagrams, or box-drawing
-characters, since the reader may be using a screen reader.
+characters, since the reader may be using a screen reader. Give counts in a
+sentence ("seven serious, three moderate"), not as a column of numbers.
 
 Save to memory the recurring patterns and decisions of each project (deliberate
 deviations, known trade-offs), so the next review doesn't rediscover them or flag

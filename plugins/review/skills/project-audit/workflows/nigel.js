@@ -42,8 +42,21 @@ const FINDINGS = {
         required: ['severity', 'what', 'where', 'evidence', 'status', 'fix'],
       },
     },
+    coverage: {
+      type: 'array',
+      items: {
+        type: 'object',
+        properties: {
+          area: { type: 'string' },
+          item: { type: 'string' },
+          verdict: { type: 'string', enum: ['fails', 'passes', 'not-applicable', 'not-tested'] },
+          note: { type: 'string' },
+        },
+        required: ['area', 'item', 'verdict'],
+      },
+    },
   },
-  required: ['findings'],
+  required: ['findings', 'coverage'],
 }
 
 const VERDICTS = {
@@ -75,20 +88,22 @@ const results = await pipeline(
     const findings = report.findings.map((f, i) => ({ ...f, group: g.name, id: `${g.name}-${i + 1}` }))
     // Suggestions are ideas, not claims about the code; there is nothing to refute.
     const claims = findings.filter(f => f.severity !== 'suggestion')
-    if (claims.length === 0) return { findings, verdicts: [] }
+    const coverage = (report.coverage || []).map(c => ({ ...c, group: g.name }))
+    if (claims.length === 0) return { findings, coverage, verdicts: [] }
     return agent(
       args.skeptic.split('FOCUS').join(g.focus).split('FINDINGS').join(JSON.stringify(claims, null, 2)),
       { label: `verify:${g.name}`, phase: 'Verify', schema: VERDICTS },
-    ).then(v => ({ findings, verdicts: v ? v.verdicts : null }))
+    ).then(v => ({ findings, coverage, verdicts: v ? v.verdicts : null }))
   },
 )
 
-const confirmed = [], suspected = [], refuted = [], failedGroups = []
+const confirmed = [], suspected = [], refuted = [], coverage = [], failedGroups = []
 results.forEach((r, i) => {
   if (!r) {
     failedGroups.push(GROUPS[i].name)
     return
   }
+  coverage.push(...r.coverage)
   if (r.verdicts === null) log(`${GROUPS[i].name}: the skeptic did not return; keeping Nigel's own status`)
   const verdicts = new Map((r.verdicts || []).map(v => [v.id, v]))
   for (const f of r.findings) {
@@ -102,11 +117,14 @@ results.forEach((r, i) => {
 })
 if (failedGroups.length) log(`No report from: ${failedGroups.join(', ')} — those areas were not covered`)
 log(`${confirmed.length} confirmed, ${suspected.length} suspected, ${refuted.length} refuted`)
+const untested = coverage.filter(c => c.verdict === 'not-tested')
+if (untested.length) log(`${untested.length} coverage item(s) not tested`)
 
 const bySeverity = (a, b) => SEVERITIES.indexOf(a.severity) - SEVERITIES.indexOf(b.severity)
 return {
   confirmed: confirmed.sort(bySeverity),
   suspected: suspected.sort(bySeverity),
   refuted,
+  coverage,
   failedGroups,
 }

@@ -23,6 +23,13 @@ Project review and release-readiness auditing.
 
 The skill calls the agent, so they are packaged together.
 
+Nigel ends every review with a coverage list: for an app with a user interface,
+a verdict on every WCAG 2.2 AA criterion (fails, passes, not applicable, or not
+tested), and for other areas what was checked and found fine. It opens no
+window without permission, since a launched app takes focus from a screen
+reader user: project-audit asks once, and without a yes Nigel checks web apps
+headless and marks desktop visuals as suspected.
+
 ## Git behavior
 
 `project-audit` commits each round of fixes you choose to implement and, by

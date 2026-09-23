@@ -23,7 +23,8 @@ and the work is committed as far as the `git` setting goes.
 
 Keep user-visible output accessible: plain prose and bullet lists, no tables,
 ASCII diagrams, or box-drawing characters. The same goes for what subagents
-return.
+return. Give counts in a sentence ("seven serious, three moderate"), not as a
+column of numbers.
 
 ## Arguments
 
@@ -85,7 +86,17 @@ skip any the user opts out of.
 
 ### Step 2. First reviewer
 
-**Nigel** (`nigel-first`, `nigel-only`). Run the workflow, which fans Nigel out
+**Nigel** (`nigel-first`, `nigel-only`). If the project has a user interface,
+first ask once whether Nigel may open windows. A launched desktop app, or a
+browser that is not headless, takes focus from whatever the user is doing,
+which matters with a screen reader. Offer "headless only" (web apps are still
+checked in Playwright's headless shell; desktop visuals are marked suspected)
+and "windows allowed, now". Put the answer into the prompt's `WINDOWS_RULE`:
+either "Do not open any window: headless browser only; mark what you could not
+see as suspected." or "Windows are allowed during this audit: batch every
+launch into one session and close what you open."
+
+Then run the workflow, which fans Nigel out
 over four focus groups (code and DX, accessibility and visuals, docs and
 packaging, tests and security) and has a skeptic per group try to refute each
 finding against the files:
@@ -94,14 +105,14 @@ finding against the files:
 Workflow({
   scriptPath: "${CLAUDE_PLUGIN_ROOT}/skills/project-audit/workflows/nigel.js",
   args: {
-    nigel: <contents of references/prompts/nigel-focus.md>,
+    nigel: <contents of references/prompts/nigel-focus.md, WINDOWS_RULE filled>,
     skeptic: <contents of references/prompts/nigel-skeptic.md>
   }
 })
 ```
 
-It returns `confirmed`, `suspected`, and `refuted` findings, plus any
-`failedGroups` whose area went uncovered. Treat the script as a template: to
+It returns `confirmed`, `suspected`, and `refuted` findings, the `coverage`
+each group reported, and any `failedGroups` whose area went uncovered. Treat the script as a template: to
 narrow the audit (say, the user only asked about docs), pass `groups` with just
 those focus areas.
 
@@ -111,7 +122,7 @@ Without the Workflow tool, launch a single Nigel instead:
 Agent(
   subagent_type: "review:project-analyst",
   description: "Nigel project audit",
-  prompt: "Perform a full release-readiness audit of this project."
+  prompt: "Perform a full release-readiness audit of this project. Windows: <WINDOWS_RULE>"
 )
 ```
 
@@ -141,7 +152,9 @@ whether to continue with Nigel alone.
 Present the findings as a compact bullet list grouped by severity, numbered so the
 user can refer to them. For Nigel, list confirmed findings first, then suspected
 ones marked as such with what would confirm them, then a one-line count of
-refuted findings (offer their reasons on request). Name any failed focus group.
+refuted findings (offer their reasons on request). Name any failed focus group,
+and list the coverage entries marked not tested, since those are areas nobody
+looked at.
 
 Then ask with AskUserQuestion which to implement:
 - all critical and serious (or major) findings;
