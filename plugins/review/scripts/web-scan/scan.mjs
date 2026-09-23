@@ -330,12 +330,16 @@ function layoutProbe() {
 // sequence of stops repeating without focus ever leaving the page is a trap
 // (2.1.2) until checked with Escape and Shift+Tab by hand.
 async function walkTabOrder(page, limit = 80) {
-  // The styles a focus indicator can change. Written out in both evaluate
-  // callbacks below, because a page's Content Security Policy can forbid
-  // rebuilding a function from text inside the page.
+  // The styles a focus indicator can change. An outline or border that is not
+  // drawn cannot show focus, whatever its color or offset: Chromium's own link
+  // styles change outline-offset on focus while the outline stays `none`.
   const focusStyleOf = (el) => {
     const cs = getComputedStyle(el);
-    return [cs.outlineStyle, cs.outlineWidth, cs.outlineColor, cs.boxShadow, cs.backgroundColor, cs.borderColor, cs.color, cs.textDecorationLine].join('|');
+    const outline = cs.outlineStyle === 'none' || parseFloat(cs.outlineWidth) === 0
+      ? 'no outline' : [cs.outlineStyle, cs.outlineWidth, cs.outlineColor, cs.outlineOffset].join(',');
+    const widths = [cs.borderTopWidth, cs.borderRightWidth, cs.borderBottomWidth, cs.borderLeftWidth];
+    const border = widths.every((w) => parseFloat(w) === 0) ? 'no border' : [...widths, cs.borderColor, cs.borderStyle].join(',');
+    return [outline, border, cs.boxShadow, cs.backgroundColor, cs.backgroundImage, cs.color, cs.textDecorationLine, cs.transform].join('|');
   };
   await page.evaluate(() => { document.activeElement?.blur?.(); window.scrollTo(0, 0); });
 
@@ -346,8 +350,6 @@ async function walkTabOrder(page, limit = 80) {
     const handle = await page.evaluateHandle(() => document.activeElement);
     const info = await handle.evaluate((el) => {
       if (!el || el === document.body || el === document.documentElement) return null;
-      const cs = getComputedStyle(el);
-      const style = [cs.outlineStyle, cs.outlineWidth, cs.outlineColor, cs.boxShadow, cs.backgroundColor, cs.borderColor, cs.color, cs.textDecorationLine].join('|');
       const r = el.getBoundingClientRect();
       const cx = r.left + r.width / 2;
       const cy = r.top + r.height / 2;
@@ -361,13 +363,18 @@ async function walkTabOrder(page, limit = 80) {
         text: (el.getAttribute('aria-label') || el.innerText || el.value || '').trim().slice(0, 60),
         inView,
         obscuredBy: covered ? `${top.tagName.toLowerCase()}${top.id ? `#${top.id}` : ''}` : null,
-        style,
       };
     });
+    if (info) info.style = await handle.evaluate(focusStyleOf).catch(() => null);
 
+    // Compare only once focus has really moved on: an element that holds focus
+    // would otherwise be compared with itself, still focused.
     if (previous) {
-      const after = await previous.handle.evaluate(focusStyleOf).catch(() => null);
-      previous.stop.visibleIndicator = after === null ? null : after !== previous.stop.style;
+      const moved = await page.evaluate(([a, b]) => a !== b, [previous.handle, handle]).catch(() => false);
+      if (moved) {
+        const after = await previous.handle.evaluate(focusStyleOf).catch(() => null);
+        previous.stop.visibleIndicator = after === null || previous.stop.style === null ? null : after !== previous.stop.style;
+      }
       delete previous.stop.style;
     }
 

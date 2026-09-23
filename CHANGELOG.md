@@ -5,6 +5,18 @@ All notable changes to this repo are recorded here. Format loosely follows
 
 ## [Unreleased]
 
+## [0.12.1] - 2026-09-24
+
+Plugins: review 0.4.1.
+
+### Fixed
+- The web scanner misjudged focus indicators in two cases. A link with no
+  visible indicator read as having one, because Chromium's own link styles
+  change `outline-offset` on focus while the outline stays `none`; undrawn
+  outlines and borders no longer count. And an element that holds focus (a
+  one-element trap) was compared with itself, still focused, and read as
+  having none; the comparison now waits until focus has really moved.
+
 ## [0.12.0] - 2026-09-23
 
 Plugins: review 0.4.0.
