@@ -1,0 +1,1 @@
+This is a re-check after fixes, so the bar is higher: report only critical and major problems (bugs, security holes, data loss, broken functionality, wrong logic, mishandled errors and exceptions). Leave out style, naming, and suggestions.

@@ -51,4 +51,4 @@ Fields:
 - Focus on user-facing features. Infrastructure changes (build setup, CI, etc.) are less relevant for a user manual.
 - If a plan describes a feature that was partially implemented, note it as "partial" and list which sub-features are done.
 - Include deviations — they often explain why the app behaves differently from what one might expect.
-- Do NOT read code to discover features — that's the job of other scouts. Only extract what the plan files document.
+- Don't read code to discover features — that's the job of other scouts. Only extract what the plan files document.

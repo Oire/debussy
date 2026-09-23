@@ -1,49 +1,29 @@
-# Task prompt for subagent
+# Task prompt
 
-Use this prompt when spawning each task subagent (replace `PLAN_FILE_PATH`, `PROGRESS_FILE_PATH`, `USER_RULES`, and `SKILL_SCRIPTS` with actual values — `SKILL_SCRIPTS` is the absolute path to the `plan-exec` scripts directory, e.g. `${CLAUDE_PLUGIN_ROOT}/skills/plan-exec/scripts`):
+The prompt for each task subagent. Substitute `PLAN_FILE_PATH`, `PROGRESS_FILE_PATH`, `GIT_MODE`, `SKILL_SCRIPTS`, `SKILL_REFS`, and `USER_RULES` before passing it on.
 
 ```
-Read the plan file at PLAN_FILE_PATH. Find the FIRST Task section (### Task N: or ### Iteration N:) that has uncompleted checkboxes ([ ]).
-
-Accessibility-friendly output: do NOT use ASCII diagrams, tables, box-drawing characters, or pseudographics in your terminal output. Prefer plain prose and simple bullet lists.
-
-If a Task section has [ ] checkboxes you cannot complete (manual testing, deployment verification, external checks): mark them [x] with a note like "[x] manual test (skipped - not automatable)" and proceed.
-
-CRITICAL CONSTRAINT: Complete ONE Task section per iteration.
-A Task section is a "### Task N:" or "### Iteration N:" header with all its checkboxes underneath.
-Complete ALL checkboxes in that section, then STOP.
-Do NOT continue to the next section.
-
-CRITICAL: Do NOT commit, stage, or push anything. The user commits manually. Your job is to implement and mark checkboxes — nothing else touches git.
+You are implementing one task of an implementation plan: PLAN_FILE_PATH. Your task is the first `### Task N:` (or `### Iteration N:`) section that still has `[ ]` items. Do that section and nothing after it.
 
 USER_RULES
 
-STEP 1 - IMPLEMENT:
-- Read the plan's Overview and Context sections to understand the work
-- Implement ALL items in the current Task section (all [ ] checkboxes under it)
-- Write tests for the implementation
+You are done when every item in that section is implemented, the plan's validation commands pass, the items are marked `[x]` in the plan file, progress is logged, and the work is committed (unless GIT_MODE is `none`).
 
-STEP 2 - VALIDATE:
-- Run the test and lint commands specified in the plan (e.g., "dotnet test", "phpunit", "vendor/bin/phpstan", etc.)
-- Fix any failures, repeat until all validation passes
+How to get there:
+- Read the plan's Overview, Done when, and Context sections first; they say why the task exists.
+- Implement the items. Write or update tests the way the plan's Development Approach describes.
+- An item you cannot do from here (manual testing, a deployment check): mark it `[x]` with the note "(skipped: not automatable)".
+- Run the commands in the plan's "Validation commands" section and fix failures until the build is green and the tests pass.
+- Mark the items `[x]` in PLAN_FILE_PATH. If the work also satisfies an item under Done when, tick that too.
+- Log progress through the script, never by writing the file directly:
+  bash SKILL_SCRIPTS/append-progress.sh PROGRESS_FILE_PATH "task N: <title>"
+  echo "- modified: <files>
+  - implemented: <what>
+  - tests: <added or updated, or why none>
+  - validation: <commands that passed>" | bash SKILL_SCRIPTS/append-progress.sh PROGRESS_FILE_PATH
+- Git mode is GIT_MODE. Unless it is `none`, commit following the Commits section of SKILL_REFS/git.md: stage the code, tests, and plan file by name (nothing under `.claude/`), subject line = the task title, short body saying what changed. Do not push.
 
-STEP 3 - MARK COMPLETE (after validation passes):
-- Edit PLAN_FILE_PATH and change [ ] to [x] for each checkbox you implemented in the current Task section
-- If Task sections are complete but Success criteria, Overview, or Context has [ ] items that the implementation satisfies, mark them [x] too
-- Do NOT commit — leave all changes uncommitted for the user
+Stop and answer `BLOCKED: <the question>` instead of guessing when the plan leaves open a decision that changes the outcome (an API shape, a data format, behavior a user would notice), or when validation fails for a reason outside this task. Leave the work uncommitted in that case and log what you tried.
 
-STEP 4 - LOG PROGRESS:
-Log a header line: bash SKILL_SCRIPTS/append-progress.sh PROGRESS_FILE_PATH "task N: <title>"
-Then log the details using echo piped to the script:
-echo "- modified: <files>
-- implemented: <what was done>
-- tests: <what tests added, or why skipped>
-- validation: <what commands passed>" | bash SKILL_SCRIPTS/append-progress.sh PROGRESS_FILE_PATH
-IMPORTANT: Use ONLY the append-progress.sh script for writing to the progress file. Do NOT use cat >>, echo >>, or heredocs directly.
-
-STOP after logging progress.
-
-If any phase fails after reasonable fix attempts, log the failure to PROGRESS_FILE_PATH and report what failed.
-
-ONE task section per run. After marking checkboxes and logging progress, STOP.
+Otherwise finish with `DONE: Task N` and one line saying what you did. Write plain prose and bullet lists; no ASCII tables, diagrams, or box drawing.
 ```

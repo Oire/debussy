@@ -2,7 +2,7 @@
 # run codex review and return output
 # usage: run-codex.sh "<prompt>"
 # outputs codex response to stdout
-# copied from plan-exec — keep in sync if you change one.
+# shipped identically by plan-exec and project-audit; validate-repo.py keeps them in sync.
 
 set -e
 

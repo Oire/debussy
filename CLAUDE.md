@@ -17,8 +17,10 @@ plugin.
 - `plugins/<name>/` — one plugin each. Every plugin has
   `.claude-plugin/plugin.json` and auto-discovers `agents/`, `commands/`,
   `skills/`, and `hooks/hooks.json` beneath it.
-  - `planning` — brainstorm, plan-make, plan-review, plan-exec.
-  - `review` — project-analyst (Nigel) + project-audit.
+  - `planning` — brainstorm, plan-make, plan-review, plan-exec (with its
+    review workflow in `skills/plan-exec/workflows/`).
+  - `review` — project-analyst (Nigel, with per-stack checklists in
+    `references/project-analyst/`) + project-audit (with its Nigel workflow).
   - `write-manual` — the manual-writing pipeline.
   - `dotnet-tools` — the .NET style corrector.
   - `conventions` — the convention hooks (+ their `hooks/hooks.json`).
@@ -60,8 +62,24 @@ These hooks match on **content**, so they cannot tell prose from quotation:
   writing) trips the null hook. Author such files with the `Write` tool (the
   hook only matches `Bash|PowerShell`), or use `2>&-`.
 
+## When to stop and ask
+
+Keep going without asking through reading, editing, running the suites, and
+committing verified work. Stop and ask when:
+
+- a change would flip a hook's verdict on an existing case in `tests/cases/`;
+  that is a policy change, not a fix;
+- a plugin's behavior would change for the people who install it in a way the
+  request did not cover (git behavior, what a skill asks, what it writes where);
+- a suite fails and the fix is outside what you were asked to change;
+- it is unclear which plugin a new component belongs to.
+
 ## Editing rules
 
+- **Keep shared skill files identical.** Plugins install independently, so
+  `references/git.md` ships in plan-exec, project-audit, and write-manual, and
+  `scripts/run-codex.sh` in plan-exec and project-audit. Change one, copy it to
+  the others; `validate-repo.py` fails on drift.
 - **Keep the two American-English runners in sync.** The `.sh` word map is
   generated from the `.ps1`; if you change spellings, update
   `plugins/conventions/hooks/cross-platform/check-american-english.ps1` and
@@ -94,7 +112,21 @@ These hooks match on **content**, so they cannot tell prose from quotation:
   fix, minor = new component, major = breaking). The marketplace has its own
   version in `metadata`.
 - **Cross-references** use the plugin prefix: `/planning:plan-make`,
-  `/planning:plan-exec`, etc.
+  `/planning:plan-exec`, `review:project-analyst`, etc.
+- **Write for Claude 5 models.** Say what done looks like and when to stop and
+  ask; give judgment with its reason instead of absolute rules; state things
+  once, without capitals or CRITICAL/MUST for emphasis; leave out what any
+  capable engineer already knows and keep what is specific to Oire or the
+  project. Agent descriptions load into every session, so keep them to a few
+  lines with no examples.
+- **Workflows ship inside the skill** that runs them
+  (`skills/<name>/workflows/*.js`), and the skill calls the Workflow tool with
+  `scriptPath` under `${CLAUDE_PLUGIN_ROOT}`, with a plain Agent fallback. A
+  script cannot read files, so the skill resolves the prompts and passes them in
+  `args`; prompt text stays in `references/` where projects can override it.
+- **User settings** for the git-writing skills live in `.claude/debussy.json`
+  (project) or `~/.claude/debussy.json` (user); `references/git.md` defines
+  the keys.
 
 ### Known Claude Code limitations (manage expectations)
 
@@ -106,10 +138,12 @@ These hooks match on **content**, so they cannot tell prose from quotation:
 
 ## The planning trio
 
-`plan-make` (command, writes a plan to `docs/plans/`) → `plan-review` (agent,
-vets it read-only) → `plan-exec` (skill, executes it task by task). All in the
-`planning` plugin, sharing the `docs/plans/<number>-<task>.md` scheme.
-`brainstorm` is the design step that precedes them.
+`plan-make` (command, writes a plan to `docs/plans/` on a fresh branch cut
+from the base branch and commits it) → `plan-review` (agent, vets it read-only)
+→ `plan-exec` (skill, executes it task by task with a commit per task, reviews
+the result, and opens a pull request). All in the `planning` plugin, sharing
+the `docs/plans/<number>-<task>.md` scheme. `brainstorm` is the design step
+that precedes them.
 
 ## Git
 

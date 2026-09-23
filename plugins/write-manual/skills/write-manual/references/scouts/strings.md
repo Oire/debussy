@@ -51,7 +51,7 @@ Fields per string:
 
 ## Important
 
-- Do NOT translate strings. Only extract the English originals.
+- Don't translate strings. Only extract the English originals.
 - Preserve format placeholders exactly as they appear (`{0}`, `%s`, etc.).
 - Include plural forms if the localization system supports them.
 - If a string reveals a feature or behavior not covered by other scouts, flag it with a note.

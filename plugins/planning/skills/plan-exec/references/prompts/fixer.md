@@ -1,45 +1,25 @@
 # Fixer prompt
 
-Use this for the fixer agent after collecting review findings (replace `PLAN_FILE_PATH`, `PROGRESS_FILE_PATH`, `FINDINGS_LIST`, and `SKILL_SCRIPTS` — `SKILL_SCRIPTS` is the absolute path to the `plan-exec` scripts directory):
+The prompt for the fixer, used by the review workflow and the Codex loop. Substitute `PLAN_FILE_PATH`, `PROGRESS_FILE_PATH`, `GIT_MODE`, `SKILL_SCRIPTS`, and `SKILL_REFS`; the workflow (or, for Codex, the skill) fills `FINDINGS_LIST`.
 
 ```
-Code review found the following issues. Verify and fix them.
+A review of this branch produced the findings below. Fix them, validate, and commit.
 
-Accessibility-friendly output: do NOT use ASCII diagrams, tables, box-drawing characters, or pseudographics in your terminal output. Prefer plain prose and simple bullet lists.
-
-Plan file: PLAN_FILE_PATH (read it to find validation commands in the "## Validation Commands" section)
-Progress file: PROGRESS_FILE_PATH (read it for context on what previous iterations found and fixed)
+Plan: PLAN_FILE_PATH. Its "Validation commands" section lists the build, test, and lint commands.
+Progress: PROGRESS_FILE_PATH, the record of earlier rounds and what they changed.
 
 FINDINGS:
 FINDINGS_LIST
 
-STEP 1 - VERIFY:
-For each finding, read the actual code at the specified file:line. Check 20-30 lines of context. Classify as:
-- CONFIRMED: real issue, fix it
-- FALSE POSITIVE: doesn't exist or already mitigated, discard
+1. Look at the code behind each finding before changing anything. If one does not hold up (already fixed, a misreading, handled elsewhere), mark it not-fixed and say why; do not force a change.
+2. Fix the rest, including missing tests when a finding asks for them. Keep the changes to what the findings need.
+3. Run the validation commands. Finish with the build green and the tests passing; if you cannot get there, say so plainly instead of reporting success.
+4. Log through the script, never by writing the file directly:
+   echo "- fixed: <ids>
+   - not fixed: <ids and why>
+   - validation: <commands that passed>" | bash SKILL_SCRIPTS/append-progress.sh PROGRESS_FILE_PATH
+5. Git mode is GIT_MODE. Unless it is `none`, make one commit following the Commits section of SKILL_REFS/git.md, with a subject like "Address review findings" and a body listing what changed. Do not push.
+6. Report one line per finding, `fixed` or `not-fixed`, with its id, file:line, and what changed or why not; then the validation result and the commit hash. When you are given a structured output format, fill that in instead.
 
-STEP 2 - FIX:
-- Fix all confirmed issues (including adding missing tests if flagged)
-
-STEP 3 - VALIDATE (MANDATORY — code MUST compile and tests MUST pass):
-- Build, test, and run validation commands from PLAN_FILE_PATH
-- If anything fails: fix it and re-run everything
-- NEVER leave broken code — do NOT report success if the build is red or tests fail
-
-STEP 4 - LOG PROGRESS:
-Log details: echo "- confirmed: <list>
-- false positives: <list>
-- fixes: <what changed>
-- validation: <what passed>" | bash SKILL_SCRIPTS/append-progress.sh PROGRESS_FILE_PATH
-IMPORTANT: Use ONLY the append-progress.sh script. Do NOT use cat >>, echo >>, or heredocs directly.
-
-STEP 5 - REPORT (MANDATORY — this is your return value to the parent):
-Do NOT commit, stage, or push anything — the user handles all git operations.
-Your final response MUST include a structured summary starting with "FIXES:" on its own line, followed by one line per fix:
-FIXES:
-- fixed: <file>:<line> — <what was fixed>
-- fixed: <file>:<line> — <what was fixed>
-- false positive: <description> — <why discarded>
-
-This report is shown to the user. Be specific about what changed.
+Write plain prose and bullet lists; no ASCII tables, diagrams, or box drawing.
 ```

@@ -69,7 +69,7 @@ Fields per menu item:
 
 ## Important
 
-- Do NOT invent menu items. Only report what the code defines.
+- Don't invent menu items. Only report what the code defines.
 - Capture the exact mnemonic letter — this is critical for accessibility documentation.
 - If menu items are built dynamically (e.g. from a list of columns), describe the pattern and give an example.
 - Include submenus as nested `items` arrays.

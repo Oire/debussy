@@ -72,7 +72,7 @@ Return a JSON array of windows/dialogs:
 
 ## Important
 
-- Do NOT invent controls or layouts. Only report what the code defines.
+- Don't invent controls or layouts. Only report what the code defines.
 - Tab order is critical for accessibility documentation — get it right.
 - Note any drag-and-drop interactions and their keyboard equivalents.
 - Note any controls that change visibility or behavior based on settings.

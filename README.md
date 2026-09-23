@@ -55,9 +55,9 @@ The idea-to-execution pipeline; the four components chain via the
 | Component | Trigger | Description |
 | --- | --- | --- |
 | `brainstorm` (skill) | `/planning:brainstorm`, or "brainstorm", "help me design" | One-question-at-a-time conversation that turns a rough idea into a validated design |
-| `plan-make` (command) | `/planning:plan-make` | Writes a structured implementation plan to `docs/plans/` |
+| `plan-make` (command) | `/planning:plan-make` | Writes a structured implementation plan to `docs/plans/` on a new branch cut from the up-to-date base branch |
 | `plan-review` (agent) | Task tool, or "review my plan" | Read-only review of a plan for completeness, correctness, and over-engineering before any code |
-| `plan-exec` (skill) | `/planning:plan-exec`, or "execute plan" | Executes the plan task by task in isolated subagents, leaving work uncommitted for review |
+| `plan-exec` (skill) | `/planning:plan-exec`, or "execute plan" | Executes the plan task by task in isolated subagents with a commit per task, reviews the result (parallel reviewers, an independent skeptic, a fixer), and opens a pull request |
 
 ### review
 
@@ -92,6 +92,38 @@ story and the PowerShell/manual alternative.
 | `check-american-english` (cross-platform) | `Write`/`Edit`/`MultiEdit`/`NotebookEdit` | Blocks writes containing non-American spellings |
 | `check-git-guard` (cross-platform) | `Bash`/`PowerShell` | Blocks git writes that destroy work — bare force/deleting/mirroring `push`, `reset --hard`, `restore`, destructive `checkout`, `clean -f`, bulk staging, `git mv`/`git rm`, `rebase -i`. Staging named paths, committing, amending, a plain or leased `push`, and a non-interactive `rebase` are allowed |
 | `check-no-null-redirect` (Windows-only) | `Bash`/`PowerShell` | Blocks null-device redirects that leave stray `nul` files. Shipped but not auto-wired (a plugin can't branch on OS); wire manually on Windows |
+
+## Settings: how far the skills go with git
+
+`plan-make`, `plan-exec`, `project-audit`, and `write-manual` work on a new
+branch cut from the current tip of your base branch, commit as they go, push,
+and open a pull request with `gh`. To change that, create `.claude/debussy.json`
+in a project, or `~/.claude/debussy.json` for all of them (a key in the project
+file wins):
+
+```json
+{
+  "git": "pr",
+  "baseBranch": "",
+  "aiAttribution": false
+}
+```
+
+- `git`: `none` leaves every change uncommitted, `commit` stops after committing
+  on the branch, `push` also pushes it, and `pr` (the default) also opens the
+  pull request.
+- `baseBranch`: where work starts and what the pull request targets. Empty
+  means detect it from `origin/HEAD`, falling back to `main`, `master`,
+  `trunk`, or `develop`.
+- `aiAttribution`: `false` (the default) keeps AI, Claude, co-author trailers,
+  and session links out of branch names, commits, and pull requests.
+
+`aiAttribution` is an instruction to the model. To also switch off the
+attribution Claude Code itself adds, set `attribution` in your Claude Code
+`settings.json` (its `commit`, `pr`, and `sessionUrl` keys).
+
+The full contract is in any skill's `references/git.md`, for example
+[`plugins/planning/skills/plan-exec/references/git.md`](plugins/planning/skills/plan-exec/references/git.md).
 
 ## Updating plugins
 

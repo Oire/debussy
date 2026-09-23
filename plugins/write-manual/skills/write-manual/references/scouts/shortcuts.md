@@ -47,6 +47,6 @@ Also include standard Windows shortcuts (Ctrl+C, Ctrl+V, etc.) if the applicatio
 
 ## Important
 
-- Do NOT invent shortcuts. Only report what the code defines.
+- Don't invent shortcuts. Only report what the code defines.
 - If a shortcut is commented out or in dead code, skip it.
 - If you cannot determine the action clearly, set action to "UNKNOWN — needs clarification" and include the surrounding code context.

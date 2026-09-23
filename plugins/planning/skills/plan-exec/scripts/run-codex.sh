@@ -2,7 +2,7 @@
 # run codex review and return output
 # usage: run-codex.sh "<prompt>"
 # outputs codex response to stdout
-# git-only.
+# shipped identically by plan-exec and project-audit; validate-repo.py keeps them in sync.
 
 set -e
 
@@ -12,7 +12,12 @@ if [ -z "$prompt" ]; then
     exit 1
 fi
 
-codex exec \
+# `echo "" |` closes stdin for codex. Without it, codex blocks forever
+# waiting on stdin when invoked from non-interactive contexts (Claude
+# Code bash tasks, CI runners, etc.) — stdin is inherited from the
+# parent and never reaches EOF. Portable across bash / Git Bash /
+# PowerShell / cmd; avoids the `< /dev/null` Unix-ism.
+echo "" | codex exec \
     --sandbox read-only \
     -c "model=${CODEX_MODEL:-gpt-5.4}" \
     -c "model_reasoning_effort=high" \

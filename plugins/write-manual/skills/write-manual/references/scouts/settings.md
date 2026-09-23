@@ -52,6 +52,6 @@ Fields:
 
 ## Important
 
-- Do NOT invent settings. Only report what the code defines.
+- Don't invent settings. Only report what the code defines.
 - Include settings that are conditionally hidden or disabled (note the condition in `dependencies`).
 - If a setting's effect is unclear from the code, set description to "UNCLEAR — needs clarification" and include the surrounding code context.

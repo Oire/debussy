@@ -1,97 +1,29 @@
 ---
 name: brainstorm
-description: Use before any creative work or significant changes. Activates on "brainstorm", "let's brainstorm", "deep analysis", "analyze this feature", "think through", "help me design", "explore options for", or when user asks for thorough analysis of changes, features, or architectural decisions. Guides collaborative dialogue to turn ideas into designs through one-at-a-time questions, approach exploration, and incremental validation.
+description: Use before creative work or significant changes, to turn an idea into a validated design through conversation. Activates on "brainstorm", "let's brainstorm", "deep analysis", "analyze this feature", "think through", "help me design", "explore options for", or when the user asks for a thorough analysis of a change, feature, or architectural decision.
 ---
 
 # Brainstorm
 
-Turn ideas into designs through collaborative dialogue before implementation.
+Turn an idea into a design the user has agreed to, before anyone writes code. The session is done when the user has validated each part of the design and picked a next step.
 
-## Process
+## 1. Understand the idea
 
-### Phase 1: Understand the Idea
+Start with the context you can gather yourself: the relevant code, docs, and recent commits. Then ask about what you could not work out: the purpose, constraints, what success looks like, and where it plugs in. Ask in small rounds, one topic at a time; related questions can go together in one AskUserQuestion call. Offer multiple choice with a recommended answer where you can.
 
-Check project context first, then ask questions one at a time:
+## 2. Explore approaches
 
-1. **Gather context** - check files, docs, recent commits relevant to the idea
-2. **Ask questions one at a time** - prefer multiple choice when possible
-3. **Focus on**: purpose, constraints, success criteria, integration points
+Once the problem is clear, propose two or three approaches with their trade-offs, conversationally rather than as a formal document. Lead with the one you recommend and say why. When one approach is plainly right, say so rather than inventing alternatives.
 
-Do not overwhelm with multiple questions. One question per message. If a topic needs more exploration, break it into multiple questions.
+Cut features the goal doesn't need. When code would repeat, name the trade-off: duplication is simpler and uncoupled, an abstraction is DRY but adds complexity. Recommend one, and let the user decide.
 
-### Phase 2: Explore Approaches
+## 3. Present the design
 
-Once the problem is understood:
+Once the user has chosen an approach, present the design in sections of a few hundred words: architecture, components, data flow, error handling, and testing. After each section, check that it looks right. Going back is cheap now and expensive later, so revisit earlier sections when something new doesn't fit them.
 
-1. **Propose 2-3 different approaches** with trade-offs
-2. **Lead with recommended option** and explain reasoning
-3. **Present conversationally** - not a formal document yet
+## 4. Next step
 
-Example format:
-```
-I see three approaches:
-
-**Option A: [name]** (recommended)
-- how it works: ...
-- pros: ...
-- cons: ...
-
-**Option B: [name]**
-- how it works: ...
-- pros: ...
-- cons: ...
-
-Which direction appeals to you?
-```
-
-### Phase 3: Present Design
-
-After approach is selected:
-
-1. **Break design into sections** of 200-300 words each
-2. **Ask after each section** whether it looks right
-3. **Cover**: architecture, components, data flow, error handling, testing
-4. **Be ready to backtrack** if something doesn't make sense
-
-Do not present entire design at once. Incremental validation catches misunderstandings early.
-
-### Phase 4: Next Steps
-
-After design is validated, use AskUserQuestion tool:
-
-```json
-{
-  "questions": [{
-    "question": "Design looks complete. What's next?",
-    "header": "Next step",
-    "options": [
-      {"label": "Write plan", "description": "Create docs/plans/YYYY-MM-DD-<topic>.md with implementation steps via /plan-make"},
-      {"label": "Plan mode", "description": "Enter plan mode for structured implementation planning"},
-      {"label": "Start now", "description": "Begin implementing directly"}
-    ],
-    "multiSelect": false
-  }]
-}
-```
-
-- **Write plan**: invoke `/plan-make` command to create the plan file. Pass brainstorm context (discovered files, selected approach, design decisions) as arguments so the plan command has full context without re-asking questions
-- **Plan mode**: uses EnterPlanMode tool for detailed planning with user approval workflow
-- **Start now**: proceeds directly if design is simple enough
-
-## Key Principles
-
-- **One question at a time** - do not overwhelm with multiple questions
-- **Multiple choice preferred** - easier to answer than open-ended when possible
-- **YAGNI ruthlessly** - remove unnecessary features from all designs, keep scope minimal
-- **Explore alternatives** - always propose 2-3 approaches before settling
-- **Incremental validation** - present design in sections, validate each
-- **Be flexible** - go back and clarify when something doesn't make sense
-- **Lead with recommendation** - have an opinion, explain why, but let user decide
-- **Duplication vs abstraction** - when code repeats, ask user: prefer duplication (simpler, no coupling) or abstraction (DRY but adds complexity)? explain trade-offs before deciding
-
-## Task Tracking
-
-When implementing after brainstorm:
-- Track implementation tasks using available task management tools (task lists, plan file checkboxes, or similar)
-- Mark each task as completed immediately when done (do not batch)
-- Keep user informed of progress through status updates
+Ask with AskUserQuestion:
+- **Write plan**: run `/planning:plan-make`, passing the brainstorm's context (the files found, the chosen approach, the design decisions) so it does not ask again.
+- **Plan mode**: use EnterPlanMode to plan with the user's approval.
+- **Start now**: implement directly, when the design is small enough. Track the tasks in a task list and mark each one done as it lands.

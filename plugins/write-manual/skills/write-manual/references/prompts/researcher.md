@@ -59,7 +59,7 @@ For each feature, document the *user-visible behavior*, not the internal mechani
 - Edge cases a user might encounter
 - Why it works the way it does (when non-obvious)
 
-IMPORTANT: Do NOT name internal systems or mechanisms (no "Title Derivation system," "Single Instance mechanism," "ConfirmOnExit handler"). Describe behavior from the user's perspective: "If you leave the title blank, the note list shows a title made from the first line."
+Don't name internal systems or mechanisms (no "Title Derivation system," "Single Instance mechanism," "ConfirmOnExit handler"). Describe behavior from the user's perspective: "If you leave the title blank, the note list shows a title made from the first line."
 
 ### 6. Settings reference
 Complete table of every setting:

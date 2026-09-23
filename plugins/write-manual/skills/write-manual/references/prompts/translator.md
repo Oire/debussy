@@ -29,7 +29,7 @@ Produce a complete translated HTML file that:
 - The "User Manual" subtitle in the header
 - Copyright text in the footer (translate the text, keep the company name)
 
-### Content to NOT translate
+### Content to leave untranslated
 - HTML tag names, attributes, IDs, classes
 - `aria-labelledby` values (they reference IDs, which stay in English)
 - CSS (inline or in `<style>`)
@@ -66,15 +66,15 @@ Produce a complete translated HTML file that:
   - Hebrew: right-to-left quotation marks; geresh and gershayim where appropriate
 
 ### Glossary enforcement
-- Every term in the language glossary MUST use the specified translation — no synonyms, no variation
-- Every rule in the base glossary MUST be followed
+- Every term in the language glossary uses the specified translation — no synonyms, no variation
+- Every rule in the base glossary applies
 - If a term appears in the manual that is not in the glossary but should be (technical term, UI concept), flag it for glossary addition
 
 ## Output
 
 A single, complete, valid HTML file in the target language. Nothing else — no commentary, no explanations, no markdown wrapping, no trailing comments.
 
-The output starts with `<!DOCTYPE html>` and ends with `</html>`. Do NOT add any comment blocks (including translator notes) anywhere in the file — HTML comments are forbidden.
+The output starts with `<!DOCTYPE html>` and ends with `</html>`. Don't add comment blocks (including translator notes) anywhere in the file; the output contains no HTML comments.
 
 If you have flagged terms or unverifiable UI strings, report them as plain text BEFORE the HTML output, separated by a blank line. The orchestrator will collect these notes separately. Format:
 

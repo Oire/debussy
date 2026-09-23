@@ -216,6 +216,34 @@ for pattern in component_globs.values():
         )
 
 # --------------------------------------------------------------------------
+print("\n== shared skill files ==")
+
+# Plugins install independently, so a file two skills need ships in each of
+# them. These copies must not drift: the git workflow is one contract for the
+# user, and a fix to the Codex runner has to reach both reviewers.
+SHARED = {
+    "git.md": sorted(ROOT.glob("plugins/*/skills/*/references/git.md")),
+    "run-codex.sh": sorted(ROOT.glob("plugins/*/skills/*/scripts/run-codex.sh")),
+}
+for name, copies in SHARED.items():
+    check(len(copies) >= 2, f"{name} ships in more than one skill ({len(copies)} found)")
+    first = copies[0].read_bytes() if copies else b""
+    for copy in copies[1:]:
+        check(
+            copy.read_bytes() == first,
+            f"{rel(copy)} is identical to {rel(copies[0])}",
+        )
+
+# A workflow script's first statement must be its pure-literal meta export,
+# or the Workflow tool refuses to run it.
+for script in sorted(ROOT.glob("plugins/*/skills/*/workflows/*.js")):
+    text = script.read_text(encoding="utf-8")
+    check(
+        text.startswith("export const meta = {"),
+        f"{rel(script)} starts with its meta export",
+    )
+
+# --------------------------------------------------------------------------
 print("\n== convention hook runners ==")
 
 cross = ROOT / "plugins" / "conventions" / "hooks" / "cross-platform"

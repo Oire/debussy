@@ -1,325 +1,102 @@
 ---
 description: Create structured implementation plan in docs/plans/
 argument-hint: describe the feature or task to plan
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, Task, EnterPlanMode, TaskCreate, TaskUpdate, TaskList
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash, AskUserQuestion, Agent, Skill, EnterPlanMode, TaskCreate, TaskUpdate, TaskList
 ---
 
-# Implementation Plan Creation
+# Implementation plan
 
-create an implementation plan in `docs/plans/<plan-number>-<task-name>.md` with interactive context gathering. Plan number is either the issue number parsed from the description argument, or a sequential number like `001`, `002`, `003` etc. 
+Write an implementation plan to `docs/plans/<number>-<name>.md`, on a fresh branch, ready for `/planning:plan-exec`. The number is the issue number if the request names one; otherwise the next free three-digit number in `docs/plans/` (`001`, `042`). The name is short, lowercase, and hyphenated.
 
-## step 0: parse intent and gather context
+The plan is done when it:
+- says what finished looks like
+- lists the commands that prove it
+- breaks the work into tasks a fresh subagent can carry out one at a time without asking what you meant
 
-before asking questions, understand what the user is working on:
+## 1. Understand the request
 
-1. **parse user's command arguments** to identify intent:
-   - "add feature Z" / "implement W" → feature development
-   - "fix bug" / "debug issue" → bug fix plan
-   - "refactor X" / "improve Y" → refactoring plan
-   - "migrate to Z" / "upgrade W" → migration plan
-   - generic request → explore current work
+Work out what kind of change this is (feature, bug fix, refactor, migration) and send an Explore agent for the context that kind needs:
+- for a feature: the code it touches and similar existing features to copy
+- for a bug: the failure, the code path, and recent changes there
+- for a refactor or migration: every affected file, its test coverage, and its dependents
 
-2. **launch Explore agent** to gather relevant context based on intent:
+Also find the project's build, test, and lint commands, since the plan has to name them.
 
-   **for feature development:**
-   - locate related existing code and patterns
-   - check project structure and similar implementations
-   - identify affected components and dependencies
+Then ask the user only what you cannot settle from the request and the code: the goal if it is ambiguous, scope boundaries, constraints, and anything that changes the design. Put the questions in one AskUserQuestion call, with multiple choice and a recommended answer where you can. If nothing is unclear, say what you understood in a sentence or two and move on.
 
-   **for bug fixing:**
-   - look for error logs, test failures, or stack traces
-   - find related code that might be involved
-   - check recent changes in problem areas
+## 2. Choose an approach
 
-   **for refactoring/migration:**
-   - identify all files/components affected
-   - check test coverage of affected areas
-   - find dependencies and integration points
+When more than one approach is reasonable, give two or three with their trade-offs, lead with the one you recommend and why, and let the user pick. Skip this when there is one obvious path or the user already said how. When code would repeat, name the trade-off: duplication is simpler and uncoupled, an abstraction is DRY but adds complexity. Recommend one.
 
-   **for generic/unclear requests:**
-   - check `git status` and recent file activity
-   - examine current working directory structure
-   - identify primary language/framework
+## 3. Branch
 
-3. **synthesize findings** into context summary:
-   - what work is in progress
-   - which files/areas are involved
-   - what the apparent goal is
-   - relevant patterns or structure discovered
+Read `${CLAUDE_PLUGIN_ROOT}/skills/plan-exec/references/git.md` and resolve its settings. Unless the git mode is `none`, start the plan on a new branch cut from the up-to-date base branch, named after the plan without its number (`001-add-login.md` goes on `add-login`). If you are already on a branch other than the base, ask whether to stack the plan on it or start from the base.
 
-## step 1: present context and ask focused questions
+## 4. Write the plan
 
-show the discovered context, then ask questions **one at a time** using the AskUserQuestion tool:
-
-"based on your request, i found: [context summary]"
-
-**ask questions one at a time (do not overwhelm with multiple questions):**
-
-1. **plan purpose**: use AskUserQuestion - "what is the main goal?"
-   - provide multiple choice with suggested answer based on discovered intent
-   - wait for response before next question
-
-2. **scope**: use AskUserQuestion - "which components/files are involved?"
-   - provide multiple choice with suggested discovered files/areas
-   - wait for response before next question
-
-3. **constraints**: use AskUserQuestion - "any specific requirements or limitations?"
-   - can be open-ended if constraints vary widely
-   - wait for response before next question
-
-4. **plan title**: use AskUserQuestion - "short descriptive title?"
-   - provide suggested name based on intent
-
-after all questions answered, synthesize responses into plan context.
-
-## step 1.5: explore approaches
-
-once the problem is understood, propose implementation approaches:
-
-1. **propose 2-3 different approaches** with trade-offs for each
-2. **lead with recommended option** and explain reasoning
-3. **present conversationally** - not a formal document yet
-
-example format:
-```
-i see three approaches:
-
-**Option A: [name]** (recommended)
-- how it works: ...
-- pros: ...
-- cons: ...
-
-**Option B: [name]**
-- how it works: ...
-- pros: ...
-- cons: ...
-
-which direction appeals to you?
-```
-
-use AskUserQuestion tool to let user select preferred approach before creating the plan.
-
-**skip this step** if:
-- the implementation approach is obvious (single clear path)
-- user explicitly specified how they want it done
-- it's a bug fix with clear solution
-
-## step 2: create plan file
-
-check `docs/plans/` for existing files, then create `docs/plans/<plan-number>-<task-name>.md` (use issue number parsed from description or, if absent, sequential number in the folder with three digits, like `001`, `042`, `123`):
-
-### plan structure
+Use this structure. `/planning:plan-exec` relies on the `### Task N:` headings and `[ ]` checkboxes, and its subagents read Overview, Done when, Validation commands, and Development approach.
 
 ```markdown
-# [Plan Title]
+# <Plan title>
 
 ## Overview
-- clear description of the feature/change being implemented
-- problem it solves and key benefits
-- how it integrates with existing system
+What changes, what problem it solves, and how it fits the existing system.
 
-## Context (from discovery)
-- files/components involved: [list from step 0]
-- related patterns found: [patterns discovered]
-- dependencies identified: [dependencies]
+## Done when
+- [ ] <observable outcome, e.g. "a registered user can log in with email and password">
+- [ ] <another outcome>
+- [ ] all validation commands pass
 
-## Development Approach
-- complete each task fully before moving to the next
-- make small, focused changes
-- **CRITICAL: every task MUST include new/updated tests** for code changes in that task, if the task is not related to UI or tests are especially discouraged by user
-  - tests are not optional - they are a required part of the checklist, if the task is not related to UI or tests especially discouraged by user
-  - write unit tests for new functions/methods
-  - write unit tests for modified functions/methods
-  - add new test cases for new code paths
-  - update existing test cases if behavior changes
-  - tests cover both success and error scenarios
-- **CRITICAL: all tests must pass before starting next task** - no exceptions
-- **CRITICAL: update this plan file when scope changes during implementation**
-- run tests after each change
-- maintain backward compatibility, if not especially told by user to introduce breaking changes
+## Validation commands
+- build: `<command>`
+- test: `<command>`
+- lint or format check: `<command, if the project has one>`
+- e2e: `<command, if the project has e2e tests>`
 
-## Testing Strategy
-- **unit tests**: required for every task, if not related to UI and not discouraged by user (see Development Approach above)
-- **e2e tests**: if project has UI-based e2e tests (Playwright, Cypress, etc.):
-  - UI changes → add/update e2e tests in same task as UI code
-  - backend changes supporting UI → add/update e2e tests in same task
-  - treat e2e tests with same rigor as unit tests (must pass before next task)
-  - store e2e tests alongside unit tests (or in designated e2e directory)
-  - example: if task implements new form field, add e2e test checking form submission
+## Context
+- files and components involved
+- patterns to follow (with a file that shows each)
+- dependencies
 
-## Progress Tracking
-- mark completed items with `[x]` immediately when done
-- add newly discovered tasks with ➕ prefix
-- document issues/blockers with ⚠️ prefix
-- update plan if implementation deviates from original scope
-- keep plan in sync with actual work done
+## Development approach
+- One task at a time; the validation commands pass before the next task starts.
+- Code changes come with tests for the new and changed behavior, success and error paths, unless the change is UI-only or the user said to skip tests. UI work in a project with e2e tests gets e2e tests in the same task.
+- A test that cannot pass until a later task is still written now, marked with a comment naming that task.
+- Keep backward compatibility unless the user asked for a breaking change.
+- When scope changes, update this plan: new tasks get a "➕" prefix, blockers a "⚠️" prefix.
 
-## What Goes Where
-- **Implementation Steps** (`[ ]` checkboxes): tasks achievable within this codebase - code changes, tests, documentation updates
-- **Post-Completion** (no checkboxes): items requiring external action - manual testing, changes in consuming projects, deployment configs, third-party verifications
+## Implementation steps
 
-## Implementation Steps
-
-<!--
-Task structure guidelines:
-- Each task = ONE logical unit (one function, one endpoint, one component)
-- Use specific descriptive names, not generic "[Core Logic]" or "[Implementation]"
-- Each task MUST have a **Files:** block listing files to Create/Modify (before checkboxes)
-- Aim for ~5 checkboxes per task (more is OK if logically atomic)
-  - tests are not optional - they are a required deliverable of every task, if not related to UI or especially discouraged by user
-  - write tests for all NEW code added in this task
-  - write tests for all MODIFIED code in this task
-  - include both success and error scenarios in tests
-  - list tests as SEPARATE checklist items, not bundled with implementation
-
-Example (NOTICE: Files block + tests as separate checklist items):
-
-### Task 1: Add password hashing utility
+### Task 1: <what this task accomplishes, specifically>
 
 **Files:**
-- Create: `src/auth/hash`
-- Create: `src/auth/hash_test`
+- Create: `path/to/new_file`
+- Modify: `path/to/existing`
 
-- [ ] create `src/auth/hash` with HashPassword and VerifyPassword functions
-- [ ] implement bcrypt-based hashing with configurable cost
-- [ ] write tests for HashPassword (success + error cases)
-- [ ] write tests for VerifyPassword (success + error cases)
-- [ ] run tests - must pass before task 2
+- [ ] <specific change, naming the file>
+- [ ] <specific change>
+- [ ] tests for <behavior>: success cases
+- [ ] tests for <behavior>: error and edge cases
+- [ ] validation commands pass
 
-### Task 2: Add user registration endpoint
+### Task N: Update documentation
+- [ ] README, if users will do anything differently
+- [ ] CLAUDE.md, if the change sets a pattern or gotcha the next agent needs
 
-**Files:**
-- Create: `src/api/users`
-- Modify: `src/api/router`
-- Create: `src/api/users_test`
+## Technical details
+Data structures, formats, and processing flow, where the tasks need them.
 
-- [ ] create `POST /api/users` handler in `src/api/users`
-- [ ] add input validation (email format, password strength)
-- [ ] integrate with password hashing utility
-- [ ] write tests for handler success case with table-driven cases
-- [ ] write tests for handler error cases (invalid input, missing fields)
-- [ ] run tests - must pass before task 3
--->
-
-### Task 1: [specific name - what this task accomplishes]
-
-**Files:**
-- Create: `exact/path/to/new_file`
-- Modify: `exact/path/to/existing`
-
-- [ ] [specific action with file reference - code implementation]
-- [ ] [specific action with file reference - code implementation]
-- [ ] write tests for new/changed functionality (success cases)
-- [ ] write tests for error/edge cases
-- [ ] run tests - must pass before next task
-
-### Task N-1: Verify acceptance criteria
-- [ ] verify all requirements from Overview are implemented
-- [ ] verify edge cases are handled
-- [ ] run full test suite: `<project test command>`
-- [ ] run e2e tests if project has them: `<project e2e test command>`
-- [ ] verify test coverage meets project standard
-
-### Task N: [Final] Update documentation
-- [ ] update README.md if needed
-- [ ] update CLAUDE.md if new patterns discovered
-- [ ] move this plan to `docs/plans/completed/`
-
-## Technical Details
-- data structures and changes
-- parameters and formats
-- processing flow
-
-## Post-Completion
-*Items requiring manual intervention or external systems - no checkboxes, informational only*
-
-**Manual verification** (if applicable):
-- manual UI/UX testing scenarios
-- Accessibility considerations
-- performance testing under load
-- security review considerations
-
-**External system updates** (if applicable):
-- consuming projects that need updates after this library change
-- configuration changes in deployment systems
-- third-party service integrations to verify
+## Post-completion
+Things outside this codebase, with no checkboxes: manual and accessibility testing, changes needed in consuming projects, deployment configuration.
 ```
 
-## step 3: next steps
+Size each task as one logical unit (a function, an endpoint, a component), usually around five checkboxes, with tests as their own items. A task named "Core logic" is too vague for a subagent to act on; say what the logic does.
 
-after creating the file, tell user: "created plan: `docs/plans/<plan-number>-<task-name>.md`"
+## 5. Commit and hand off
 
-then use AskUserQuestion:
+Unless the git mode is `none`, commit the plan on its branch as "Add plan: <title>". Do not push yet; plan-exec pushes when the work is done. Then tell the user the plan path and branch, and ask what's next:
 
-```json
-{
-  "questions": [{
-    "question": "Plan created. What's next?",
-    "header": "Next step",
-    "options": [
-      {"label": "Manual review", "description": "Wait for manual review in editor"},
-      {"label": "Auto review", "description": "Launch AI plan-review agent for automated analysis"},
-      {"label": "Start implementation", "description": "Ask to commit plan and begin with task 1"},
-      {"label": "Done", "description": "Commit plan to git, no further action"}
-    ],
-    "multiSelect": false
-  }]
-}
-```
-
-- **Manual review**: Ask user to open the plan in the editor and add feedback by adding, removing, or modifying lines. After the user finishes and saves, re-analyze the edited file carefully and if needed, ask questions and reiterate feedback loop. When completed, ask with the same options, minus "Manual review"
-- **Auto review**: launch plan-review agent (Task tool with subagent_type=plan-review). After review completes, ask again with the same options (minus "Auto review")
-- **Start implementation**: Ask user to commit the plan, wait for user response, then begin with task 1
-- **Done**: Ask the user to commit the plan, stop
-
-## execution enforcement
-
-**CRITICAL testing rules during implementation:**
-
-1. **after completing code changes in a task**:
-   - STOP before moving to next task
-   - add tests for all new functionality, if needed
-   - update tests for modified functionality, if needed
-   - run project test command
-   - mark completed items with `[x]` in plan file
-
-2. **if tests fail**:
-   - fix the failures before proceeding
-   - do NOT move to next task with failing tests
-   - do NOT skip test writing
-
-3. **only proceed to next task when**:
-   - all task items completed and marked `[x]`
-   - tests written/updated
-   - all tests passing
-
-4. **plan tracking during implementation**:
-   - update checkboxes immediately when tasks complete
-   - add ➕ prefix for newly discovered tasks
-   - add ⚠️ prefix for blockers
-   - modify plan if scope changes significantly
-
-5. **on completion**:
-   - verify all checkboxes marked
-   - run final test suite
-   - move plan to `docs/plans/completed/`
-   - create directory if needed: `mkdir -p docs/plans/completed`
-
-6. **partial implementation exception**:
-   - if a task provides partial implementation where tests cannot pass until a later task:
-     - still write the tests as part of this task (required)
-     - add TODO comment in test code explaining the dependency
-     - mark the test checkbox as completed with note: `[x] write tests ... (fails until Task X)`
-     - do NOT skip test writing or defer until later
-   - when the dependent task completes, remove the TODO comment and verify tests pass
-
-this ensures each task is solid before building on top of it.
-
-## key principles
-
-- **one question at a time** - do not overwhelm user with multiple questions in a single message
-- **multiple choice preferred** - easier to answer than open-ended when possible
-- **DRY ruthlessly** - avoid unnecessary duplication, keep scope minimal (but prefer duplication over premature abstraction when it reduces coupling)
-- **lead with recommendation** - have an opinion, explain why, but let user decide
-- **explore alternatives** - always propose 2-3 approaches before settling (unless obvious)
-- **duplication vs abstraction** - when code repeats, ask user: prefer duplication (simpler, no coupling) or abstraction (DRY but adds complexity)? explain trade-offs before deciding
+- **Auto review**: run the `planning:plan-review` agent on the plan, apply the fixes the user agrees with, commit them, and ask again.
+- **Manual review**: the user edits the plan in their editor. When they are done, re-read it, raise anything that no longer fits together, commit, and ask again.
+- **Start implementation**: invoke the `planning:plan-exec` skill with the plan path.
+- **Done**: stop here.

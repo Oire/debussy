@@ -5,6 +5,76 @@ All notable changes to this repo are recorded here. Format loosely follows
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-09-23
+
+Plugins: planning 0.2.0, review 0.2.0, write-manual 0.2.0, dotnet-tools 0.1.1.
+
+### Changed
+- **Skills now take their work to a pull request.** `plan-make`, `plan-exec`,
+  `project-audit`, and `write-manual` used to leave everything uncommitted.
+  They now start on a new branch cut from the current tip of the base branch
+  (`main`, `master`, or whatever `origin/HEAD` names), commit at verified
+  boundaries, push, and open a pull request with `gh`. `plan-make` branches and
+  commits the plan; `plan-exec` commits once per task and once per review round,
+  moves the plan to `completed/`, and opens the pull request; `project-audit`
+  commits once per triage round and never commits files that held the user's
+  own changes. Nothing written to git mentions AI, Claude, or session links.
+
+  All of it is set in `.claude/debussy.json` (project) or
+  `~/.claude/debussy.json` (user): `git` is `none`, `commit`, `push`, or `pr`
+  (the default); `baseBranch` overrides detection; `aiAttribution` defaults to
+  `false`. `"git": "none"` restores the old behavior. The contract lives in one
+  `references/git.md`, shipped identically in each of the three skills.
+- **Instructions rewritten for Claude 5 models**, following Anthropic's guidance
+  for Opus 5.5 and the Claude 5 generation. Each skill and plan now states what
+  done looks like and when to stop and ask. Absolute rules repeated in capitals
+  gave way to judgment with its reason. Generic checklists a capable model
+  already knows were cut, keeping what is specific to Oire. Agent descriptions,
+  which load into every session, went from multi-example essays to a few lines.
+- **plan-exec review is a workflow.** Reviewers read the branch in parallel
+  through up to six lenses (quality, implementation, testing, simplification,
+  documentation, conventions), scaled to the size of the diff. A skeptic per
+  file then tries to refute each finding, and one fixer handles what survives,
+  validates, and commits. Re-check rounds cover critical problems only.
+  Refuted findings are reported with their reasons rather than dropped. The
+  separate smells phase became a lens, and the Codex loop is capped at three
+  rounds instead of ten. Without the Workflow tool, the skill runs the same
+  steps with plain subagents.
+- **Nigel is verified.** `project-audit` fans Nigel out over four focus areas
+  and has a skeptic check each area's findings against the files. Every finding
+  carries its evidence and a status, confirmed or suspected. Nigel runs the
+  app and screenshots it when it can, instead of judging visual design from
+  layout code alone. The per-stack checklists moved to reference files, read
+  after the stack is detected.
+- **write-manual** keeps a progress file so a run can resume after a restart,
+  and can screenshot the app so the researcher and verifier work from the real
+  UI.
+- **plan-make** asks only what the request and the code leave open, in one
+  round, instead of four fixed questions. Plans gain "Done when" and
+  "Validation commands" sections.
+
+### Fixed
+- The plan-exec fixer read a "Validation Commands" section that no plan ever
+  had.
+- Subagents were launched with a `mode: "bypassPermissions"` parameter the
+  Agent tool does not take; permission prompts on destructive commands now
+  apply as configured.
+- A plan's final task moved the plan file while plan-exec was still re-reading
+  it at its old path. plan-exec now moves it after the last task.
+- plan-exec's Codex runner lacked the closed-stdin fix that project-audit's
+  copy had, so Codex could hang when run from a background task.
+- The .NET style corrector carried a hardcoded memory path from the project it
+  was extracted from, and gave the wrong syntax for using declarations.
+- Stale names: the `Task` tool (now `Agent`), `/plan-make` without its plugin
+  prefix, a date-based plan filename in brainstorm, a nonexistent `plan.md` in
+  plan-review, and WCAG 2.4.11 labeled as Focus Appearance (it is Focus Not
+  Obscured).
+
+### Added
+- `validate-repo.py` checks that the shared copies of `git.md` and
+  `run-codex.sh` stay identical, and that workflow scripts start with their
+  `meta` export.
+
 ## [0.7.0] - 2026-09-02
 
 ### Changed
