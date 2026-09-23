@@ -32,14 +32,23 @@ SKILL_DIR = ${CLAUDE_PLUGIN_ROOT}/skills/write-manual
 - `$SKILL_DIR/references/scouts/*.md` — Haiku scout prompt templates
 - `$SKILL_DIR/references/prompts/*.md` — agent prompts (researcher, writer, verifier, translator)
 - `$SKILL_DIR/references/glossaries/*.schema.json` — glossary JSON schemas
+- `$SKILL_DIR/references/glossaries/examples/` — example glossaries for a made-up app, showing the format only
 - `$SKILL_DIR/references/git.md` — branching, committing, pushing, and the pull request
+
+## Glossaries
+
+Glossaries belong to the project, not the plugin: they live in `HELP_DIR/glossaries/` next to the manuals they govern, and they are committed with them.
+- `base.json` holds rules for every language: names never translated, terms always capitalized. It follows `base-glossary.schema.json`.
+- `<lang>.json` (`en.json`, `fr.json`) holds one language's fixed term translations and localized key names. It follows `language-glossary.schema.json`.
+
+The files in `examples/` illustrate the format; their ExampleApp entries are not content to copy. If the app's build copies the help directory into the product, `glossaries/` should be excluded from that copy; mention it once if you see the help directory in a build or packaging file.
 
 ## Git
 
 Follow `$SKILL_DIR/references/git.md`. What is specific to this skill:
 
 - **Branch.** If you are on the base branch, cut `manual-<YYYY-MM-DD>` before writing any file. If you are already on another branch, stay on it: the manual belongs with the work on that branch.
-- **Commits.** Commit the approved English manual first, then the translations (one commit for all languages is fine). The glossaries live in the plugin, not the project, so glossary updates are not part of these commits; tell the user which glossary files changed. Leave out the product brief, screenshots, and the progress file.
+- **Commits.** Commit the approved English manual first, together with a base glossary created in this run; then the translations (one commit for all languages is fine); then glossary updates from flagged terms. Leave out the product brief, screenshots, and the progress file.
 - **Push and pull request** at the end of Step 11, as far as the `git` setting goes.
 
 ## Progress file
@@ -67,14 +76,14 @@ No agents needed — the orchestrator does this directly.
 1. **Resolve project path** from `$ARGUMENTS` or use the current working directory.
 2. **Read `CLAUDE.md`** at the project root. This gives you the product's tech stack, conventions, and architecture.
 3. **Read `README.md`** if it exists. This gives you the product description and setup instructions.
-4. **Find the help directory**: glob for `**/help/**/*.html` or `**/manual.html` or `**/docs/**/*.html`. Note:
+4. **Find the help directory** (`HELP_DIR` from here on): glob for `**/help/**/*.html` or `**/manual.html` or `**/docs/**/*.html`. Note:
    - Where existing manual files live (the output target)
    - Which languages already exist (subdirectories like `en/`, `fr/`, `de/`)
    - Whether a shared CSS file exists
    - Where the logo file is
 5. **Find plan files**: glob for `docs/plans/**/*.md`. Read completed plans (in `completed/` subdirectory) and any active plans with all checkboxes ticked. These describe implemented features.
 6. **Find source directories**: identify where UI code, config, services, and localization files live from the project structure in CLAUDE.md.
-7. **Find glossary files**: check `$SKILL_DIR/references/glossaries/` for `base.json` and any `LANG.json` files. If none exist yet, note that glossaries will need to be created.
+7. **Find glossary files**: check `HELP_DIR/glossaries/` for `base.json` and any `<lang>.json` files. A missing base glossary is created after Step 4; missing language glossaries grow from the terms translators flag.
 8. **Branch** per the Git section above.
 9. **Screenshots (optional).** Ask the user once whether the app can be launched here. If yes, build and run it, then capture the main window and each dialog you can reach to `help/.screenshots/` (on Windows, a PowerShell screen capture of the app window works; name each file after the window). Read them yourself to confirm they show what you expect. Screenshots are evidence of real layout, control order, and labels, which code alone only implies. If the app can't be launched, skip this; the scouts work from code either way.
 
@@ -136,17 +145,19 @@ For multiple-choice questions, use the `options` format. For open-ended question
 
 Collect all answers. Append them to the product brief.
 
+If `HELP_DIR/glossaries/base.json` does not exist, create it now from the brief: the product and company names, the platform and assistive-technology names that are never translated, and any capitalization rules the brief implies. Take the format from `$SKILL_DIR/references/glossaries/examples/base.json` and check it against `base-glossary.schema.json`. Show the user the entries in a short list; they can correct them before the writer relies on them.
+
 ### Step 5. Write (Opus agent)
 
 Read the writer prompt from `$SKILL_DIR/references/prompts/writer.md`.
 Read all rules files from `$SKILL_DIR/references/rules/`.
-Read the base glossary from `$SKILL_DIR/references/glossaries/base.json` (if it exists).
+Read `HELP_DIR/glossaries/base.json`, and `HELP_DIR/glossaries/en.json` if it exists.
 
 Spawn one agent with `model: "opus"`:
 - The writer prompt
 - The complete product brief (with user's answers appended)
 - All four rules files (html.md, encoding.md, tone.md, keyboard.md), pasted in full: the writer needs every rule while it writes, so they go in the prompt rather than by reference
-- The base glossary
+- The base glossary, and the English glossary if there is one
 - The existing manual (if any) — clearly marked as "reference only, do not copy"
 - The target file path (e.g. `src/ExampleApp/help/en/manual.html`)
 
@@ -180,7 +191,7 @@ Spawn one agent with `model: "sonnet"`:
 - The generated HTML manual (full content)
 - The product brief
 - All four rules files
-- The base glossary
+- The base glossary, and the English glossary if there is one
 - Source file paths for spot-checking
 - The screenshot paths from Step 1, if any, for checking described layout, labels, and focus order against the real app
 
@@ -231,7 +242,7 @@ Only proceed here if the user approved the English manual for translation.
 
 1. **Determine target languages**: check which language directories exist in the help folder (e.g. `fr/`, `de/`, `ru/`, `uk/`). Also ask the user if they want to add new languages.
 
-2. **Check glossaries**: for each target language, check if `$SKILL_DIR/references/glossaries/LANG.json` exists.
+2. **Check glossaries**: for each target language, check if `HELP_DIR/glossaries/<lang>.json` exists.
    - If a glossary is missing, inform the user: "No glossary found for LANGUAGE. The translator will use its best judgment and flag terms for glossary creation."
 
 3. **Read the translator prompt** from `$SKILL_DIR/references/prompts/translator.md`.
@@ -301,7 +312,7 @@ Each accepted revision is its own commit.
 After the user accepts all manuals:
 - Delete the temporary product brief (`help/.product-brief.md`) and the screenshots (`help/.screenshots/`) if they were created
 - If any terms were flagged during translation, offer to create or update glossary files:
-  "X terms were flagged during translation. Would you like me to add them to the glossaries?"
+  "X terms were flagged during translation. Would you like me to add them to the glossaries?" On yes, write them to `HELP_DIR/glossaries/<lang>.json` (a new file follows `language-glossary.schema.json`, with `examples/en.json` as the format reference) and commit them as their own commit.
 - Push and open the pull request as far as the `git` setting goes (see git.md)
 - Delete the progress file
 - Report completion: "Manual complete. English + X translations written to HELP_DIR." Add the branch, commits, and pull request URL.

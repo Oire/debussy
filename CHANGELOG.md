@@ -5,6 +5,22 @@ All notable changes to this repo are recorded here. Format loosely follows
 
 ## [Unreleased]
 
+## [0.9.0] - 2026-09-23
+
+Plugins: write-manual 0.3.0.
+
+### Changed
+- **write-manual glossaries live in the project.** They used to sit inside the
+  installed plugin, where a plugin update overwrote whatever a run had added.
+  They now live in `glossaries/` in the project's help directory (`base.json`
+  plus one `<lang>.json` per language) and are committed with the manuals. A
+  first run creates `base.json` from the product brief; flagged translation
+  terms go into the language files when the user agrees. The bundled ExampleApp
+  glossaries moved to `references/glossaries/examples/` and serve only as a
+  format reference. The writer and verifier now also get the English glossary
+  when a project has one. Glossaries added to an earlier plugin version's
+  install directory are not migrated; copy them into `help/glossaries/` by hand.
+
 ## [0.8.0] - 2026-09-23
 
 Plugins: planning 0.2.0, review 0.2.0, write-manual 0.2.0, dotnet-tools 0.1.1.
