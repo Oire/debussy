@@ -79,8 +79,9 @@ const FIXES = {
     },
     validation: { type: 'string' },
     commit: { type: 'string' },
+    leftovers: { type: 'array', items: { type: 'string' } },
   },
-  required: ['fixes', 'validation'],
+  required: ['fixes', 'validation', 'leftovers'],
 }
 
 const maxRounds = args.maxRounds || 3
@@ -152,11 +153,19 @@ for (let round = 1; round <= maxRounds; round++) {
     args.fixer.split('FINDINGS_LIST').join(JSON.stringify(confirmed, null, 2)),
     { label: `fix:round-${round}`, phase: 'Fix', schema: FIXES },
   )
-  rounds.push({ round, kind, found, confirmed, refuted, fixes: fix ? fix.fixes : [], validation: fix && fix.validation, commit: fix && fix.commit })
+  rounds.push({
+    round, kind, found, confirmed, refuted,
+    fixes: fix ? fix.fixes : [],
+    validation: fix && fix.validation,
+    commit: fix && fix.commit,
+    leftovers: (fix && fix.leftovers) || [],
+  })
   if (!fix) {
     log(`Round ${round}: the fixer did not return; stopping`)
     break
   }
+  // Uncommitted leftovers are missing from the diff the next round reviews.
+  if ((fix.leftovers || []).length) log(`Round ${round}: still uncommitted after the fix: ${fix.leftovers.join(', ')}`)
 }
 
 if (!clean) log(`Stopped after ${rounds.length} round(s); the last round's fixes have not been re-reviewed`)

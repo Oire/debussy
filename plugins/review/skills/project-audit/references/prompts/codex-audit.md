@@ -6,7 +6,7 @@ This is the prompt sent to Codex for the project-audit skill. Replace `DIFF_COMM
 - Reviewing uncommitted changes: `DIFF_COMMAND` = `git diff HEAD`
 - Reviewing the whole project (no diff): substitute the literal string `FULL PROJECT`, and the prompt tells Codex to walk the tree instead.
 
-Run `bash ${CLAUDE_PLUGIN_ROOT}/skills/project-audit/scripts/run-codex.sh "<prompt>"` with `run_in_background: true`; you are notified when it finishes, so don't poll or sleep.
+Write the `## Prompt` section to a file with the Write tool and run `bash ${CLAUDE_PLUGIN_ROOT}/skills/project-audit/scripts/run-codex.sh <file>` in the background; SKILL.md has the details.
 
 ## Prompt
 

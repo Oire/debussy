@@ -33,7 +33,9 @@ SKILL_DIR = ${CLAUDE_PLUGIN_ROOT}/skills/write-manual
 - `$SKILL_DIR/references/prompts/*.md` — agent prompts (researcher, writer, verifier, translator)
 - `$SKILL_DIR/references/glossaries/*.schema.json` — glossary JSON schemas
 - `$SKILL_DIR/references/glossaries/examples/` — example glossaries for a made-up app, showing the format only
+- `$SKILL_DIR/references/settings.md` — the user's settings (`.claude/debussy.json`)
 - `$SKILL_DIR/references/git.md` — branching, committing, pushing, and the pull request
+- `$SKILL_DIR/references/manual-review.md` — acting on the notes the user leaves when reviewing a manual by hand
 
 ## Glossaries
 
@@ -45,7 +47,7 @@ The files in `examples/` illustrate the format; their ExampleApp entries are not
 
 ## Git
 
-Follow `$SKILL_DIR/references/git.md`. What is specific to this skill:
+Resolve the settings in `$SKILL_DIR/references/settings.md`, then follow `$SKILL_DIR/references/git.md`. What is specific to this skill:
 
 - **Branch.** If you are on the base branch, cut `manual-<YYYY-MM-DD>` before writing any file. If you are already on another branch, stay on it: the manual belongs with the work on that branch.
 - **Commits.** Commit the approved English manual first, together with a base glossary created in this run; then the translations (one commit for all languages is fine); then glossary updates from flagged terms. Leave out the product brief, screenshots, and the progress file.
@@ -224,7 +226,7 @@ Report the verification results to the user:
     "header": "Manual review",
     "options": [
       {"label": "Looks good — proceed to translation", "description": "Approve the English manual and start translating"},
-      {"label": "I have feedback", "description": "I'll describe what needs changing"},
+      {"label": "I have feedback", "description": "I'll describe what needs changing, or leave notes in the manual file"},
       {"label": "Stop here", "description": "Keep the English manual as-is, skip translation for now"}
     ],
     "multiSelect": false
@@ -232,7 +234,7 @@ Report the verification results to the user:
 }
 ```
 
-**If the user has feedback**: collect it, send it to the writer for revision, re-verify, and present again. Repeat until the user approves or stops.
+**If the user has feedback**: they may describe it, or annotate the manual file itself using their note markers. When they say they are done ("done", "go", "continue"), gather every note and direct edit as `$SKILL_DIR/references/manual-review.md` describes, and settle every doubt with the user before anything is revised. You don't edit manual content yourself, so hand the writer each note with its location and surrounding text, the direct edits to keep, and the instruction to remove the notes. After the writer returns, search for the markers again; none may remain. Then re-verify and present again. Repeat until the user approves or stops.
 
 **On approval** (or "Stop here"), commit the English manual per the Git section.
 
@@ -303,7 +305,7 @@ Present the complete set of manuals to the user using AskUserQuestion:
 
 **If revising English**: go back to Step 7 with user feedback. After English is re-approved, re-run Step 8-9 for all languages.
 
-**If revising a translation**: ask which language, collect feedback, re-run that specific translator.
+**If revising a translation**: ask which language, collect the feedback (described, or left as notes in that language's file, handled as in Step 7), and re-run that language's translator with it.
 
 Each accepted revision is its own commit.
 

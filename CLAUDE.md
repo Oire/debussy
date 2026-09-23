@@ -77,9 +77,10 @@ committing verified work. Stop and ask when:
 ## Editing rules
 
 - **Keep shared skill files identical.** Plugins install independently, so
-  `references/git.md` ships in plan-exec, project-audit, and write-manual, and
-  `scripts/run-codex.sh` in plan-exec and project-audit. Change one, copy it to
-  the others; `validate-repo.py` fails on drift.
+  `references/settings.md` and `references/git.md` ship in plan-exec,
+  project-audit, and write-manual; `references/manual-review.md` in plan-exec
+  and write-manual; `scripts/run-codex.sh` in plan-exec and project-audit.
+  Change one, copy it to the others; `validate-repo.py` fails on drift.
 - **Keep the two American-English runners in sync.** The `.sh` word map is
   generated from the `.ps1`; if you change spellings, update
   `plugins/conventions/hooks/cross-platform/check-american-english.ps1` and
@@ -125,8 +126,8 @@ committing verified work. Stop and ask when:
   script cannot read files, so the skill resolves the prompts and passes them in
   `args`; prompt text stays in `references/` where projects can override it.
 - **User settings** for the git-writing skills live in `.claude/debussy.json`
-  (project) or `~/.claude/debussy.json` (user); `references/git.md` defines
-  the keys.
+  (project) or `~/.claude/debussy.json` (user); `references/settings.md`
+  defines the keys.
 
 ### Known Claude Code limitations (manage expectations)
 

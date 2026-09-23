@@ -219,10 +219,13 @@ for pattern in component_globs.values():
 print("\n== shared skill files ==")
 
 # Plugins install independently, so a file two skills need ships in each of
-# them. These copies must not drift: the git workflow is one contract for the
-# user, and a fix to the Codex runner has to reach both reviewers.
+# them. These copies must not drift: the settings, the git workflow, and the
+# manual-review procedure are one contract for the user, and a fix to the Codex
+# runner has to reach both reviewers.
 SHARED = {
     "git.md": sorted(ROOT.glob("plugins/*/skills/*/references/git.md")),
+    "settings.md": sorted(ROOT.glob("plugins/*/skills/*/references/settings.md")),
+    "manual-review.md": sorted(ROOT.glob("plugins/*/skills/*/references/manual-review.md")),
     "run-codex.sh": sorted(ROOT.glob("plugins/*/skills/*/scripts/run-codex.sh")),
 }
 for name, copies in SHARED.items():

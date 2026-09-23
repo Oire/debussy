@@ -93,19 +93,20 @@ story and the PowerShell/manual alternative.
 | `check-git-guard` (cross-platform) | `Bash`/`PowerShell` | Blocks git writes that destroy work — bare force/deleting/mirroring `push`, `reset --hard`, `restore`, destructive `checkout`, `clean -f`, bulk staging, `git mv`/`git rm`, `rebase -i`. Staging named paths, committing, amending, a plain or leased `push`, and a non-interactive `rebase` are allowed |
 | `check-no-null-redirect` (Windows-only) | `Bash`/`PowerShell` | Blocks null-device redirects that leave stray `nul` files. Shipped but not auto-wired (a plugin can't branch on OS); wire manually on Windows |
 
-## Settings: how far the skills go with git
+## Settings
 
 `plan-make`, `plan-exec`, `project-audit`, and `write-manual` work on a new
 branch cut from the current tip of your base branch, commit as they go, push,
-and open a pull request with `gh`. To change that, create `.claude/debussy.json`
-in a project, or `~/.claude/debussy.json` for all of them (a key in the project
-file wins):
+and open a pull request with `gh`. To change that, or how you mark notes when
+you review a file by hand, create `.claude/debussy.json` in a project, or
+`~/.claude/debussy.json` for all of them (a key in the project file wins):
 
 ```json
 {
   "git": "pr",
   "baseBranch": "",
-  "aiAttribution": false
+  "aiAttribution": false,
+  "noteMarkers": ["!USERNOTE!"]
 }
 ```
 
@@ -118,12 +119,20 @@ file wins):
 - `aiAttribution`: `false` (the default) keeps AI, Claude, co-author trailers,
   and session links out of branch names, commits, and pull requests.
 
+- `noteMarkers`: how you leave notes in a plan or manual you are reviewing by
+  hand. An entry is a single token (`!USERNOTE!`, `@@`, `%%%`), where the note
+  runs to the end of the line, or an opening and closing pair written with
+  `...` (`[usernote]...[/usernote]`). When you then say "done", "go", or
+  "continue", the skill acts on every note, removes it, and asks rather than
+  guesses at the slightest doubt.
+
 `aiAttribution` is an instruction to the model. To also switch off the
 attribution Claude Code itself adds, set `attribution` in your Claude Code
 `settings.json` (its `commit`, `pr`, and `sessionUrl` keys).
 
-The full contract is in any skill's `references/git.md`, for example
-[`plugins/planning/skills/plan-exec/references/git.md`](plugins/planning/skills/plan-exec/references/git.md).
+The full contract is in any skill's `references/settings.md`, `git.md`, and
+`manual-review.md`, for example under
+[`plugins/planning/skills/plan-exec/references/`](plugins/planning/skills/plan-exec/references/).
 
 ## Updating plugins
 

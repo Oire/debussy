@@ -5,6 +5,50 @@ All notable changes to this repo are recorded here. Format loosely follows
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-09-23
+
+Plugins: planning 0.3.0, review 0.2.1, write-manual 0.4.0.
+
+### Added
+- **Notes left during manual review are acted on, all of them.** When you
+  review a plan (plan-make) or a manual (write-manual) by hand, leave notes in
+  the file with a marker. When you say "done", "go", or "continue", the skill
+  finds every note and every unmarked edit (through `git diff` when the file is
+  committed). It carries out each note and removes it, then searches again to
+  confirm none remain. At the slightest doubt it stops and asks rather than
+  guessing: a note that reads two ways, conflicts with another, or needs a
+  decision it does not make. The marker is `!USERNOTE!` by default and is set
+  by `noteMarkers` in `.claude/debussy.json`. An entry is either a single token
+  (`@@`, `%%%`) or an opening and closing pair (`[usernote]...[/usernote]`).
+  The procedure is one shared `references/manual-review.md`.
+
+### Changed
+- The settings moved out of `git.md` into their own shared `settings.md`, since
+  they now cover more than git.
+
+### Fixed
+- **Codex received a mangled prompt.** Both Codex prompts contain backticks,
+  and both skills pasted them into a double-quoted shell argument, so the shell
+  ran the report-format instruction as a command substitution and Codex never
+  saw it. `run-codex.sh` now takes a prompt file, written with the Write tool.
+- **A failed or empty Codex run counted as clean.** A non-zero exit, no output,
+  or output with neither `NO ISSUES FOUND` nor a severity tag is now reported
+  as a reviewer failure. plan-exec's Codex loop also stops after the first round
+  with no critical or major findings, once its minor findings are fixed.
+- **plan-exec accepted a task whose commit failed.** Ticked checkboxes were the
+  only success signal, so the next task swept the earlier task's changes into
+  its own commit. A task now also has to move HEAD.
+- **Uncommitted leftovers went unreported.** After each task and each fixer,
+  plan-exec warns about uncommitted paths; the reviews read the committed diff
+  and would never see them.
+- `run-codex.sh` replaces its shell with Codex, so stopping the task stops
+  Codex. Its defaults are now `gpt-5.5` at `xhigh` effort (`CODEX_MODEL`,
+  `CODEX_EFFORT`), and `CODEX_NO_OVERRIDES=1` drops the `-c` overrides for Codex
+  proxies that reject them.
+
+The Codex fixes are adapted from [cc-thingz](https://github.com/umputun/cc-thingz),
+which found the same problems in its planning plugin.
+
 ## [0.9.0] - 2026-09-23
 
 Plugins: write-manual 0.3.0.

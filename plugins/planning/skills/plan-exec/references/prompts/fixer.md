@@ -18,8 +18,8 @@ FINDINGS_LIST
    echo "- fixed: <ids>
    - not fixed: <ids and why>
    - validation: <commands that passed>" | bash SKILL_SCRIPTS/append-progress.sh PROGRESS_FILE_PATH
-5. Git mode is GIT_MODE. Unless it is `none`, make one commit following the Commits section of SKILL_REFS/git.md, with a subject like "Address review findings" and a body listing what changed. Do not push.
-6. Report one line per finding, `fixed` or `not-fixed`, with its id, file:line, and what changed or why not; then the validation result and the commit hash. When you are given a structured output format, fill that in instead.
+5. Git mode is GIT_MODE. Unless it is `none`, make one commit following the Commits section of SKILL_REFS/git.md, with a subject like "Address review findings" and a body listing what changed. Do not push. Then run `git status --porcelain`: any path outside `.claude/` still uncommitted would be invisible to the next review, which reads the committed diff, so commit it if it is yours and list it as a leftover if it is not.
+6. Report one line per finding, `fixed` or `not-fixed`, with its id, file:line, and what changed or why not; then the validation result, the commit hash, and any leftovers. When you are given a structured output format, fill that in instead.
 
 Write plain prose and bullet lists; no ASCII tables, diagrams, or box drawing.
 ```

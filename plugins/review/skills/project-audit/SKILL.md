@@ -45,8 +45,8 @@ phases" and continue as `nigel-only`.
 
 ## Git
 
-Read `${CLAUDE_PLUGIN_ROOT}/skills/project-audit/references/git.md` for the
-settings (`.claude/debussy.json`), branching, commit, push, and pull request
+Read `${CLAUDE_PLUGIN_ROOT}/skills/project-audit/references/settings.md` and
+`git.md` beside it for the settings, branching, commit, push, and pull request
 rules. What is specific to an audit:
 
 - Before anything else, note which files already have uncommitted changes
@@ -120,12 +120,21 @@ Agent(
 - Otherwise, uncommitted changes: `git diff HEAD`.
 - Otherwise: the whole project, passed as the literal `FULL PROJECT`.
 
-Read `references/prompts/codex-audit.md`, substitute `DIFF_COMMAND`, and run it
-in the background (`run_in_background: true`; you are notified when it finishes):
+Read `references/prompts/codex-audit.md` and substitute `DIFF_COMMAND`. Write
+its `## Prompt` section to `.claude/project-audit/codex-prompt.txt` with the
+Write tool. The prompt contains backticks, so it must never pass through the
+shell as text: not inline in the command, not through `echo` or an unquoted
+heredoc. Then run it in the background (`run_in_background: true`; you are
+notified when it finishes):
 
 ```
-bash ${CLAUDE_PLUGIN_ROOT}/skills/project-audit/scripts/run-codex.sh "<resolved prompt>"
+bash ${CLAUDE_PLUGIN_ROOT}/skills/project-audit/scripts/run-codex.sh .claude/project-audit/codex-prompt.txt
 ```
+
+A non-zero exit, empty output, or output with neither `NO ISSUES FOUND` nor a
+single critical, major, or minor tag means Codex failed, not that the code is
+clean. Say "Codex review failed", quote its first line of output, and ask
+whether to continue with Nigel alone.
 
 ### Step 3. Triage
 

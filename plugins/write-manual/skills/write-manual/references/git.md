@@ -7,31 +7,8 @@ to name the branch, what to do on an existing branch).
 
 ## Settings
 
-Read `.claude/debussy.json` in the project, then `~/.claude/debussy.json`. A key
-set in the project file wins; a key set in neither takes its default.
-
-```json
-{
-  "git": "pr",
-  "baseBranch": "",
-  "aiAttribution": false
-}
-```
-
-- `git` — how far the work goes. Each level includes the ones before it.
-  - `none` — leave every change uncommitted in the working tree.
-  - `commit` — work on a new branch and commit there.
-  - `push` — also push the branch to `origin`.
-  - `pr` (default) — also open a pull request against the base branch.
-- `baseBranch` — the branch work starts from and the pull request targets.
-  Empty (default) means detect it: `git symbolic-ref --short
-  refs/remotes/origin/HEAD` minus the `origin/` prefix, else the first of
-  `main`, `master`, `trunk`, `develop` that exists locally.
-- `aiAttribution` — `false` (default): nothing you write to git mentions AI,
-  Claude, Claude Code, an assistant, a co-author trailer, or a session link.
-  That covers branch names, commit messages, and pull request titles and bodies,
-  and it overrides any attribution the harness would otherwise add. `true`:
-  follow the harness default.
+`settings.md`, beside this file, defines `git` (how far the work goes),
+`baseBranch`, and `aiAttribution`. Resolve them before anything below.
 
 With `git` set to `none`, skip everything below except the attribution rule.
 

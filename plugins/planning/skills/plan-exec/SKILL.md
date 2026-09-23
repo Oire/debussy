@@ -33,7 +33,7 @@ Keep going without asking between tasks, between review rounds, when a finding i
 Arguments: `$ARGUMENTS` is the plan path. Without it, list `docs/plans/*.md` (not `completed/`): use the only one, or ask which.
 
 1. Read the plan and count its `### Task N:` (or `### Iteration N:`) sections.
-2. Read `${CLAUDE_PLUGIN_ROOT}/skills/plan-exec/references/git.md` and resolve the settings it describes: git mode, base branch, attribution.
+2. Read `${CLAUDE_PLUGIN_ROOT}/skills/plan-exec/references/settings.md` and `git.md` beside it, and resolve the settings: git mode, base branch, attribution.
 3. Load custom rules: `bash ${CLAUDE_PLUGIN_ROOT}/skills/plan-exec/scripts/resolve-rules.sh planning-rules.md ${CLAUDE_PLUGIN_DATA}`. Non-empty output becomes `USER_RULES` as "ADDITIONAL CUSTOM RULES:" followed by the content; otherwise `USER_RULES` is empty. See `references/custom-rules.md`.
 4. Branch. The plan's branch is its file name without `.md` and without the leading number (`001-add-login.md` becomes `add-login`). `/planning:plan-make` normally created it already.
    - On that branch: carry on. This covers a fresh start and a resumed run alike.
@@ -61,12 +61,13 @@ Repeat until no Task section has a `[ ]` item (a limit of 50 subagent runs guard
 
 1. Re-read the plan; the subagents edit it. Take the first Task section with `[ ]` items.
 2. Tell the user the task number, title, and its open items as a plain list.
-3. Spawn a `general-purpose` subagent with the resolved `prompts/task.md`.
-4. Re-read the plan. If the section is fully checked, log it, report "Task N completed" in one line, and continue.
+3. Record `git rev-parse HEAD`, then spawn a `general-purpose` subagent with the resolved `prompts/task.md`.
+4. Re-read the plan. The task is done when its section is fully checked and, unless git mode is `none`, HEAD has moved: ticked boxes without a commit mean the commit failed, and the next task would sweep this one's changes into its own commit. When done, log it, report "Task N completed" in one line, and continue.
 5. If the subagent answered `BLOCKED: <question>`, ask the user, then rerun the task with the answer added to the prompt.
-6. Otherwise, retry once with a fresh subagent and put the failure it reported (errors, failing tests) in the prompt. A second failure stops the run.
+6. Otherwise, retry once with a fresh subagent and put the failure in the prompt: the errors or failing tests it reported, or, for a missing commit, the output of `git status --porcelain`. A second failure stops the run.
+7. After a done task, and after every fixer below, run `git status --porcelain`. Paths outside `.claude/` that are still uncommitted are left out of the branch diff the reviews read, so list them to the user as a warning. This is a report, not a reason to retry or stop.
 
-Progress is decided by the checkboxes in the plan, not by what a subagent says.
+Progress is decided by the checkboxes in the plan and the commits on the branch, not by what a subagent says.
 
 ## Review
 
@@ -80,7 +81,7 @@ The review runs as a workflow that ships with this skill: `${CLAUDE_PLUGIN_ROOT}
 - `criticalLenses`: `["quality", "implementation"]`
 - `maxRounds`: 3
 
-The workflow returns its rounds: what was found, confirmed, refuted (with reasons), and fixed. Tell the user a short list per round, including the refuted findings and why, so nothing is dropped silently. Append the rounds to the progress file.
+The workflow returns its rounds: what was found, confirmed, refuted (with reasons), fixed, and left uncommitted. Tell the user a short list per round, including the refuted findings and why, so nothing is dropped silently, and warn about any leftovers. Append the rounds to the progress file.
 
 If the Workflow tool is not available, do the same by hand: spawn the lens reviewers in parallel with the Agent tool, then give all their findings to one fixer. The fixer checks each finding before fixing it. After that, run re-check rounds with the critical lenses until clean or three rounds in all.
 
@@ -88,9 +89,12 @@ If the Workflow tool is not available, do the same by hand: spawn the lens revie
 
 Skip this if `command -v codex` finds nothing, and say so. Otherwise, loop up to three rounds:
 1. Record `git rev-parse HEAD`.
-2. Run the resolved `prompts/codex-review.md` with `bash ${CLAUDE_PLUGIN_ROOT}/skills/plan-exec/scripts/run-codex.sh "<prompt>"` in the background. You are notified when it finishes, so do not poll.
-3. On `NO ISSUES FOUND`, the loop is done.
-4. Otherwise, show the findings as a short list, spawn a fixer with them as `FINDINGS_LIST`, and show its report.
+2. Write the resolved `prompts/codex-review.md` prompt to `.claude/exec-plan/codex-prompt.txt` with the Write tool. The prompt contains backticks, so it must never pass through the shell as text: not inline in the command, not through `echo` or an unquoted heredoc.
+3. Run `bash ${CLAUDE_PLUGIN_ROOT}/skills/plan-exec/scripts/run-codex.sh .claude/exec-plan/codex-prompt.txt` in the background. You are notified when it finishes, so do not poll.
+4. Read the result. Only one outcome counts as clean: `NO ISSUES FOUND` with no critical or major finding next to it. Report the others as follows:
+   - A non-zero exit, empty output, or output with neither that marker nor a single critical, major, or minor tag means the reviewer failed, not that the code is clean. Say "Codex review failed", quote its first line of output, and move on to the final re-check.
+   - Findings go to the user as a short list. Spawn a fixer with them as `FINDINGS_LIST`, show its report, and run step 7 of Tasks.
+5. Loop only while a round reports a critical or major finding. A round with minor findings only gets its fixes and ends the loop.
 
 ## Final re-check
 

@@ -1,6 +1,6 @@
 # Codex review prompt
 
-The prompt sent to Codex. Substitute `DIFF_COMMAND` and `PROGRESS_FILE_PATH`, then run `bash SKILL_SCRIPTS/run-codex.sh "<prompt>"` in the background; you are notified when it finishes.
+The prompt sent to Codex. Substitute `DIFF_COMMAND` and `PROGRESS_FILE_PATH`, write the `## Prompt` section to a file with the Write tool, and run `bash SKILL_SCRIPTS/run-codex.sh <file>` in the background; SKILL.md has the details.
 
 - Round 1: `DIFF_COMMAND` = `git diff DEFAULT_BRANCH...HEAD`.
 - Later rounds: the fixer's changes only. With commits on, `git diff <commit before the fixer>..HEAD`; with git mode `none`, `git diff`.
