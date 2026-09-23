@@ -11,16 +11,13 @@ install path (file copy into `~/.claude/hooks` + `settings.json` wiring) for
 people who want the PowerShell runners or always-on use without enabling a
 plugin.
 
-**debussy is public, and it has two private siblings.** General-purpose plugins
-that help anyone belong here. Oire's internal tooling and client-work pipelines,
-whose value is the method and the deliverable format, belong in
-[monet](https://github.com/Oire/monet). Plugins for the Orbit Research work
-(the Olympus SDK, the screen reader, the keypad devices) belong in
-[access-player/orbit-dev](https://github.com/access-player/orbit-dev). Ask which
-of the three a new plugin belongs to before choosing a repo. Publishing here is
-a one-way door, since once published a plugin is cached, forked, and indexed,
-so nothing moves from monet or orbit-dev into debussy without the user saying
-which parts may.
+**Everything in debussy is public**: code, docs, changelog, and commit
+messages alike, and once pushed it is cached, forked, and indexed. Only
+general-purpose plugins that help anyone belong here. Internal tooling, client
+work, and anything whose value is a private method stay out, and so do their
+names: nothing here refers to private repositories, clients, or projects. When
+something is adapted from private work, describe what it does, not where it came
+from, and ask the user which parts may be published before porting any of it.
 
 ## Layout
 

@@ -16,8 +16,7 @@ Plugins: review 0.3.0, planning 0.3.1, write-manual 0.4.1.
   checks in Playwright's headless shell and opens a window only when its prompt
   allows it. project-audit asks once, up front, and passes the answer to every
   Nigel. write-manual says what will open and for how long before each launch,
-  and treats every launch as needing its own yes. Adapted from monet's
-  a11y-audit, which learned it on a real audit.
+  and treats every launch as needing its own yes.
 
 ### Added
 - **Nigel reports its coverage.** Every review ends with what was checked. For
@@ -33,7 +32,8 @@ Plugins: review 0.3.0, planning 0.3.1, write-manual 0.4.1.
   places.
 - Counts in user-facing output are written as a sentence ("seven serious, three
   moderate") rather than a column of numbers.
-- CLAUDE.md says which of the three Oire marketplaces a plugin belongs in.
+- CLAUDE.md states that everything in the repo is public, and what that rules
+  out.
 
 ## [0.10.0] - 2026-09-23
 
