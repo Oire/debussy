@@ -87,6 +87,8 @@ const FIXES = {
 const maxRounds = args.maxRounds || 3
 const key = f => `${f.file}:${f.line || 0}:${f.title.toLowerCase()}`
 const refutedKeys = new Set()
+// Lenses that returned nothing twice and have not reported in a later round.
+const unreviewed = new Set()
 const rounds = []
 let clean = false
 
@@ -98,11 +100,18 @@ for (let round = 1; round <= maxRounds; round++) {
   const kind = critical ? 'critical re-check' : 'full sweep'
   log(`Round ${round}: ${kind} with ${lenses.map(l => l.name).join(', ')}`)
 
+  const review = (l, attempt) => agent(
+    [args.preamble, critical ? args.criticalNote : '', l.prompt].filter(Boolean).join('\n\n'),
+    { label: attempt > 1 ? `review:${l.name}:retry` : `review:${l.name}`, phase: 'Review', schema: FINDINGS },
+  ).then(r => r && r.findings.map(f => ({ ...f, lens: l.name })))
   const reports = await parallel(lenses.map(l => () =>
-    agent(
-      [args.preamble, critical ? args.criticalNote : '', l.prompt].filter(Boolean).join('\n\n'),
-      { label: `review:${l.name}`, phase: 'Review', schema: FINDINGS },
-    ).then(r => r && r.findings.map(f => ({ ...f, lens: l.name })))))
+    review(l, 1).then(r => r || review(l, 2))))
+
+  // A lens that returned nothing twice left its area unreviewed. Its silence is
+  // not a clean bill, so the review is not clean until that lens reports.
+  const failedLenses = lenses.filter((l, i) => !reports[i]).map(l => l.name)
+  lenses.forEach((l, i) => reports[i] ? unreviewed.delete(l.name) : unreviewed.add(l.name))
+  if (failedLenses.length) log(`Round ${round}: no report from ${failedLenses.join(', ')}; that area went unreviewed`)
 
   // Barrier: dedupe across every lens before paying for verification.
   const byKey = new Map()
@@ -115,8 +124,8 @@ for (let round = 1; round <= maxRounds; round++) {
   const found = [...byKey.values()].map((f, i) => ({ ...f, id: `R${round}-${i + 1}` }))
   if (found.length === 0) {
     log(`Round ${round}: no findings`)
-    rounds.push({ round, kind, found: [], confirmed: [], refuted: [], fixes: [] })
-    clean = true
+    rounds.push({ round, kind, failedLenses, found: [], confirmed: [], refuted: [], fixes: [] })
+    clean = unreviewed.size === 0
     break
   }
 
@@ -144,8 +153,8 @@ for (let round = 1; round <= maxRounds; round++) {
   log(`Round ${round}: ${found.length} found, ${confirmed.length} confirmed, ${refuted.length} refuted`)
 
   if (confirmed.length === 0) {
-    rounds.push({ round, kind, found, confirmed, refuted, fixes: [] })
-    clean = true
+    rounds.push({ round, kind, failedLenses, found, confirmed, refuted, fixes: [] })
+    clean = unreviewed.size === 0
     break
   }
 
@@ -154,7 +163,7 @@ for (let round = 1; round <= maxRounds; round++) {
     { label: `fix:round-${round}`, phase: 'Fix', schema: FIXES },
   )
   rounds.push({
-    round, kind, found, confirmed, refuted,
+    round, kind, failedLenses, found, confirmed, refuted,
     fixes: fix ? fix.fixes : [],
     validation: fix && fix.validation,
     commit: fix && fix.commit,
@@ -168,5 +177,7 @@ for (let round = 1; round <= maxRounds; round++) {
   if ((fix.leftovers || []).length) log(`Round ${round}: still uncommitted after the fix: ${fix.leftovers.join(', ')}`)
 }
 
-if (!clean) log(`Stopped after ${rounds.length} round(s); the last round's fixes have not been re-reviewed`)
-return { clean, rounds }
+const last = rounds[rounds.length - 1]
+if (unreviewed.size) log(`Never reviewed, because the lens failed: ${[...unreviewed].join(', ')}`)
+if (last && last.fixes.length) log(`Stopped after ${rounds.length} round(s); the last round's fixes have not been re-reviewed`)
+return { clean, unreviewed: [...unreviewed], rounds }

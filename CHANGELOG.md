@@ -3,6 +3,27 @@
 All notable changes to this repo are recorded here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.14.0] - 2026-09-28
+
+Plugins: planning 0.4.0.
+
+### Added
+- **An accessibility lens for plan-exec's review.** When the branch touches
+  user interface files (XAML, WinForms designer files, Qt `.ui`, HTML and the
+  common template and component formats, stylesheets), a reviewer checks the
+  change against WCAG 2.2 AA and the desktop conventions Nigel already checks:
+  automation names, mnemonics without clashes, focus order, labels, contrast
+  from the declared colors, and target size. It reads code only and never
+  opens a window; what only the screen could settle is flagged for a visual
+  check.
+
+### Fixed
+- plan-exec's review no longer reads a reviewer that failed as a clean
+  report. A lens that returns nothing is retried once; if it fails again, the
+  review names it as unreviewed, is not reported clean, and says so in the
+  pull request body. Before, a round in which every lens failed ended as
+  "no findings".
+
 ## [0.13.0 - 2026-09-28]
 
 Plugins: write-manual 0.5.0.
