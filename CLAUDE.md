@@ -28,7 +28,8 @@ from, and ask the user which parts may be published before porting any of it.
   - `planning` — brainstorm, plan-make, plan-review, plan-exec (with its
     review workflow in `skills/plan-exec/workflows/`).
   - `review` — project-analyst (Nigel, with per-stack checklists in
-    `references/project-analyst/`) + project-audit (with its Nigel workflow).
+    `references/project-analyst/`) + project-audit (with its Nigel and
+    Codex-verify workflows).
   - `write-manual` — the manual-writing pipeline.
   - `dotnet-tools` — the .NET style corrector.
   - `conventions` — the convention hooks (+ their `hooks/hooks.json`).

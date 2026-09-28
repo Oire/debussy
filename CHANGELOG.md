@@ -5,9 +5,18 @@ All notable changes to this repo are recorded here. Format loosely follows
 
 ## [0.14.0] - 2026-09-28
 
-Plugins: planning 0.4.0.
+Plugins: planning 0.4.0, review 0.5.0.
 
 ### Added
+- **project-audit checks Codex's findings before you triage them.** A new
+  workflow (`workflows/codex-verify.js`) gives each file Codex cited a skeptic
+  that tries to refute its findings against the code, as Nigel's findings
+  already were. Codex's findings now arrive as confirmed, suspected, or
+  refuted; one nobody could check stays suspected.
+- **project-audit prompts can be overridden per project.** The skill reads
+  its prompts through `scripts/resolve-file.sh`, so a file under
+  `.claude/project-audit/prompts/` replaces the bundled one, as
+  `.claude/exec-plan/` already does for plan-exec.
 - **An accessibility lens for plan-exec's review.** When the branch touches
   user interface files (XAML, WinForms designer files, Qt `.ui`, HTML and the
   common template and component formats, stylesheets), a reviewer checks the

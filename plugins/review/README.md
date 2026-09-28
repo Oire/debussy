@@ -19,7 +19,11 @@ Project review and release-readiness auditing.
   (`skills/project-audit/workflows/nigel.js`): four Nigels, each on one focus
   group, and a skeptic per group that tries to refute their findings against the
   files before you see them. Without the Workflow tool it falls back to a single
-  Nigel.
+  Nigel. Codex's findings get a skeptic too
+  (`skills/project-audit/workflows/codex-verify.js`, one per file), so both
+  reviewers' findings reach you as confirmed, suspected, or refuted. A project
+  can override any of the prompts with a file of the same path under
+  `.claude/project-audit/`.
 
 The skill calls the agent, so they are packaged together.
 

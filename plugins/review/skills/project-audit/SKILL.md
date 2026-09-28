@@ -63,6 +63,14 @@ rules. What is specific to an audit:
   If you stayed on an existing branch that already has an open pull request, push
   to it and don't open another.
 
+## Prompts
+
+Read every prompt through the override chain, never directly:
+`bash ${CLAUDE_PLUGIN_ROOT}/skills/project-audit/scripts/resolve-file.sh prompts/nigel-focus.md`.
+A project can override any of them with a file of the same relative path under
+`.claude/project-audit/` (for example `.claude/project-audit/prompts/codex-audit.md`).
+For `codex-audit.md`, pass on only its `## Prompt` section, not the notes above it.
+
 ## When to ask, when to proceed
 
 Proceed without asking through reviewing, implementing clear-cut findings,
@@ -105,8 +113,8 @@ finding against the files:
 Workflow({
   scriptPath: "${CLAUDE_PLUGIN_ROOT}/skills/project-audit/workflows/nigel.js",
   args: {
-    nigel: <contents of references/prompts/nigel-focus.md, WINDOWS_RULE filled>,
-    skeptic: <contents of references/prompts/nigel-skeptic.md>
+    nigel: <resolved prompts/nigel-focus.md, WINDOWS_RULE filled>,
+    skeptic: <resolved prompts/nigel-skeptic.md>
   }
 })
 ```
@@ -131,7 +139,7 @@ Agent(
 - Otherwise, uncommitted changes: `git diff HEAD`.
 - Otherwise: the whole project, passed as the literal `FULL PROJECT`.
 
-Read `references/prompts/codex-audit.md` and substitute `DIFF_COMMAND`. Write
+Resolve `prompts/codex-audit.md` and substitute `DIFF_COMMAND`. Write
 its `## Prompt` section to `.claude/project-audit/codex-prompt.txt` with the
 Write tool. The prompt contains backticks, so it must never pass through the
 shell as text: not inline in the command, not through `echo` or an unquoted
@@ -147,14 +155,34 @@ single critical, major, or minor tag means Codex failed, not that the code is
 clean. Say "Codex review failed", quote its first line of output, and ask
 whether to continue with Nigel alone.
 
+Codex's findings get the same skeptic treatment as Nigel's before you see
+them. Parse each finding line into `{ id, file, line, severity, description }`,
+with ids `C1`, `C2`, and so on, severity one of critical, major, or minor, and
+an empty `file` when Codex gave no location. Then run:
+
+```
+Workflow({
+  scriptPath: "${CLAUDE_PLUGIN_ROOT}/skills/project-audit/workflows/codex-verify.js",
+  args: {
+    skeptic: <resolved prompts/codex-skeptic.md>,
+    findings: <the parsed findings>
+  }
+})
+```
+
+It returns `confirmed`, `suspected`, and `refuted` findings, each with the
+skeptic's note. Without the Workflow tool, spawn one `general-purpose` agent
+with the skeptic prompt and all the findings in place of `FINDINGS`, and sort
+its verdicts the same way. Skip this when Codex answered `NO ISSUES FOUND`.
+
 ### Step 3. Triage
 
 Present the findings as a compact bullet list grouped by severity, numbered so the
-user can refer to them. For Nigel, list confirmed findings first, then suspected
-ones marked as such with what would confirm them, then a one-line count of
-refuted findings (offer their reasons on request). Name any failed focus group,
-and list the coverage entries marked not tested, since those are areas nobody
-looked at.
+user can refer to them. List confirmed findings first, then suspected ones
+marked as such with what would confirm them, then a one-line count of refuted
+findings (offer their reasons on request). For Nigel, also name any failed focus
+group, and list the coverage entries marked not tested, since those are areas
+nobody looked at.
 
 Then ask with AskUserQuestion which to implement:
 - all critical and serious (or major) findings;
@@ -174,7 +202,8 @@ report one line per file touched.
 
 ### Step 5. Second reviewer
 
-- `nigel-first`: run Codex on the diff of the fixes. Skip it if the fixes
+- `nigel-first`: run Codex on the diff of the fixes, skeptic included, as in
+  Step 2. Skip it if the fixes
   produced no diff or touched only docs and metadata, where Codex has little to
   add; ask if unsure.
 - `codex-first`: run the Nigel workflow on the updated project.
@@ -191,7 +220,7 @@ most one re-run: looping until clean is plan-exec's job, not this skill's.
 ### Step 7. Finish
 
 Push and open the pull request as the `git` setting says, then report:
-- which reviewers ran and how many findings each produced (for Nigel, confirmed,
+- which reviewers ran and how many findings each produced (confirmed,
   suspected, and refuted);
 - which findings were implemented and which were skipped, so the user can
   revisit them;
