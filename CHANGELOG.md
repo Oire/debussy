@@ -52,7 +52,7 @@ Plugins: planning 0.4.0, review 0.5.0.
   pull request body. Before, a round in which every lens failed ended as
   "no findings".
 
-## [0.13.0 - 2026-09-28]
+## [0.13.0] - 2026-09-28
 
 Plugins: write-manual 0.5.0.
 
