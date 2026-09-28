@@ -25,6 +25,10 @@ Plugins: planning 0.4.0, review 0.5.0.
   from the declared colors, and target size. It reads code only and never
   opens a window; what only the screen could settle is flagged for a visual
   check.
+- plan-exec reviewers cite evidence for each finding, which their skeptic
+  checks first, and list what they checked and found fine. The pull request
+  body carries that list, so a quiet review reads as "checked and fine"
+  rather than "never looked at".
 
 ### Fixed
 - plan-exec's review no longer reads a reviewer that failed as a clean

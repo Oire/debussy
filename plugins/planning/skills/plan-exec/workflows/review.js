@@ -34,13 +34,15 @@ const FINDINGS = {
           severity: { type: 'string', enum: ['critical', 'major', 'minor'] },
           title: { type: 'string' },
           detail: { type: 'string' },
+          evidence: { type: 'string' },
           fix: { type: 'string' },
         },
-        required: ['file', 'severity', 'title', 'detail'],
+        required: ['file', 'severity', 'title', 'detail', 'evidence'],
       },
     },
+    checked: { type: 'array', items: { type: 'string' } },
   },
-  required: ['findings'],
+  required: ['findings', 'checked'],
 }
 
 const VERDICTS = {
@@ -103,7 +105,11 @@ for (let round = 1; round <= maxRounds; round++) {
   const review = (l, attempt) => agent(
     [args.preamble, critical ? args.criticalNote : '', l.prompt].filter(Boolean).join('\n\n'),
     { label: attempt > 1 ? `review:${l.name}:retry` : `review:${l.name}`, phase: 'Review', schema: FINDINGS },
-  ).then(r => r && r.findings.map(f => ({ ...f, lens: l.name })))
+  ).then(r => r && {
+    lens: l.name,
+    checked: r.checked || [],
+    findings: r.findings.map(f => ({ ...f, lens: l.name })),
+  })
   const reports = await parallel(lenses.map(l => () =>
     review(l, 1).then(r => r || review(l, 2))))
 
@@ -112,10 +118,12 @@ for (let round = 1; round <= maxRounds; round++) {
   const failedLenses = lenses.filter((l, i) => !reports[i]).map(l => l.name)
   lenses.forEach((l, i) => reports[i] ? unreviewed.delete(l.name) : unreviewed.add(l.name))
   if (failedLenses.length) log(`Round ${round}: no report from ${failedLenses.join(', ')}; that area went unreviewed`)
+  // What each lens looked at, so an empty list reads as "checked and fine".
+  const checked = reports.filter(Boolean).map(r => ({ lens: r.lens, checked: r.checked }))
 
   // Barrier: dedupe across every lens before paying for verification.
   const byKey = new Map()
-  for (const f of reports.filter(Boolean).flat()) {
+  for (const f of reports.filter(Boolean).flatMap(r => r.findings)) {
     const k = key(f)
     if (refutedKeys.has(k)) continue
     if (byKey.has(k)) byKey.get(k).lens += `, ${f.lens}`
@@ -124,7 +132,7 @@ for (let round = 1; round <= maxRounds; round++) {
   const found = [...byKey.values()].map((f, i) => ({ ...f, id: `R${round}-${i + 1}` }))
   if (found.length === 0) {
     log(`Round ${round}: no findings`)
-    rounds.push({ round, kind, failedLenses, found: [], confirmed: [], refuted: [], fixes: [] })
+    rounds.push({ round, kind, failedLenses, checked, found: [], confirmed: [], refuted: [], fixes: [] })
     clean = unreviewed.size === 0
     break
   }
@@ -153,7 +161,7 @@ for (let round = 1; round <= maxRounds; round++) {
   log(`Round ${round}: ${found.length} found, ${confirmed.length} confirmed, ${refuted.length} refuted`)
 
   if (confirmed.length === 0) {
-    rounds.push({ round, kind, failedLenses, found, confirmed, refuted, fixes: [] })
+    rounds.push({ round, kind, failedLenses, checked, found, confirmed, refuted, fixes: [] })
     clean = unreviewed.size === 0
     break
   }
@@ -163,7 +171,7 @@ for (let round = 1; round <= maxRounds; round++) {
     { label: `fix:round-${round}`, phase: 'Fix', schema: FIXES },
   )
   rounds.push({
-    round, kind, failedLenses, found, confirmed, refuted,
+    round, kind, failedLenses, checked, found, confirmed, refuted,
     fixes: fix ? fix.fixes : [],
     validation: fix && fix.validation,
     commit: fix && fix.commit,
