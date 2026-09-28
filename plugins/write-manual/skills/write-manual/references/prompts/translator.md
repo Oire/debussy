@@ -63,6 +63,8 @@ Produce a complete translated HTML file that:
   - French: thin non-breaking space before `;`, `!`, `?`, `:`; guillemets « » for quotes
   - German: „ " for quotes; commas as decimal separators in examples
   - Russian: « » for quotes
+  - Ukrainian: « » for quotes; the typographic apostrophe ’ inside words (ім’я, зв’язок), not `'`
+  - Russian and Ukrainian: a name after a generic noun (папка, меню, кнопка, диалог / діалог, вкладка, поле) that does not decline with it takes « »: папка «Загрузки», меню «Пуск», кнопка «Отмена»; a name used on its own as a noun (Проводник) takes none
   - Hebrew: right-to-left quotation marks; geresh and gershayim where appropriate
 
 ### Glossary enforcement

@@ -5,6 +5,19 @@ All notable changes to this repo are recorded here. Format loosely follows
 
 ## [Unreleased]
 
+Plugins: write-manual 0.5.0.
+
+### Added
+- **User glossaries for write-manual.** Glossaries in
+  `~/.claude/debussy/glossaries/` (same file names and schemas as a project's)
+  carry a user's word choices into every project: the skill merges them under
+  the project's glossaries, where a project entry wins, and seeds a project
+  glossary from them when it creates one. The skill never writes to them unless
+  asked.
+- The translator follows Ukrainian typography (« » quotes, the typographic
+  apostrophe), and in Russian and Ukrainian puts « » around a name that follows
+  a generic noun without declining with it: папка «Загрузки», меню «Пуск».
+
 ## [0.12.1] - 2026-09-24
 
 Plugins: review 0.4.1.
