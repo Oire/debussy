@@ -3,7 +3,7 @@
 All notable changes to this repo are recorded here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.13.0 - 2026-09-28]
 
 Plugins: write-manual 0.5.0.
 
