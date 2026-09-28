@@ -7,7 +7,8 @@ For each finding below, open the files it cites and try to refute it. Read enoug
 surrounding code, configuration, and documentation to know whether it holds.
 
 - **refuted** — the claim is wrong: the code doesn't say that, it's handled
-  elsewhere, or the rule doesn't apply here. Say what you found.
+  elsewhere, or the rule doesn't apply here. Refute it too when the problem is
+  real but the fix it proposes would make things worse. Say what you found.
 - **confirmed** — you read the evidence yourself and the problem is real.
 - **suspected** — plausible, but you can't settle it from the files (a visual
   finding you can't see, a behavior that needs the app running). Say what would

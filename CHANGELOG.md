@@ -3,7 +3,56 @@
 All notable changes to this repo are recorded here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [0.13.0 - 2026-09-28]
+## [0.14.0] - 2026-09-28
+
+Plugins: planning 0.4.0, review 0.5.0.
+
+### Added
+- **project-audit checks Codex's findings before you triage them.** A new
+  workflow (`workflows/codex-verify.js`) gives each file Codex cited a skeptic
+  that tries to refute its findings against the code, as Nigel's findings
+  already were. Codex's findings now arrive as confirmed, suspected, or
+  refuted; one nobody could check stays suspected.
+- **project-audit prompts can be overridden per project.** The skill reads
+  its prompts through `scripts/resolve-file.sh`, so a file under
+  `.claude/project-audit/prompts/` replaces the bundled one, as
+  `.claude/exec-plan/` already does for plan-exec.
+- **project-audit keeps an audit record and can be resumed.** Every finding
+  gets a stable id and is recorded in `.claude/project-audit/<branch>.md` with
+  what the user decided, so "continue the audit" picks up where it stopped and
+  skipped findings stay there to revisit. A reviewer that runs a second time
+  is given the declined and refuted findings and asked not to raise them again
+  unless the code has changed.
+
+### Changed
+- project-audit hands the chosen findings to a fixer subagent
+  (`prompts/fixer.md`) instead of fixing them in the main conversation. The
+  fixer checks each finding against the code before changing it, returns
+  design questions instead of guessing, never commits files that held the
+  user's own changes, and commits the round.
+- Nigel's skeptic also refutes a finding whose proposed fix would make things
+  worse.
+- **An accessibility lens for plan-exec's review.** When the branch touches
+  user interface files (XAML, WinForms designer files, Qt `.ui`, HTML and the
+  common template and component formats, stylesheets), a reviewer checks the
+  change against WCAG 2.2 AA and the desktop conventions Nigel already checks:
+  automation names, mnemonics without clashes, focus order, labels, contrast
+  from the declared colors, and target size. It reads code only and never
+  opens a window; what only the screen could settle is flagged for a visual
+  check.
+- plan-exec reviewers cite evidence for each finding, which their skeptic
+  checks first, and list what they checked and found fine. The pull request
+  body carries that list, so a quiet review reads as "checked and fine"
+  rather than "never looked at".
+
+### Fixed
+- plan-exec's review no longer reads a reviewer that failed as a clean
+  report. A lens that returns nothing is retried once; if it fails again, the
+  review names it as unreviewed, is not reported clean, and says so in the
+  pull request body. Before, a round in which every lens failed ended as
+  "no findings".
+
+## [0.13.0] - 2026-09-28
 
 Plugins: write-manual 0.5.0.
 

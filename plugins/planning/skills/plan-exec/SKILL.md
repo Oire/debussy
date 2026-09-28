@@ -77,11 +77,13 @@ The review runs as a workflow that ships with this skill: `${CLAUDE_PLUGIN_ROOT}
 - `criticalNote`: resolved `prompts/critical-note.md`
 - `verifier`: resolved `prompts/verifier.md`
 - `fixer`: resolved `prompts/fixer.md`
-- `lenses`: `[{ name, prompt }]`, each from `agents/<name>.txt`. Scale the lenses to the change. Under about 150 changed lines (`git diff --shortstat DEFAULT_BRANCH...HEAD`), use `quality`, `implementation`, and `testing`. Above that, add `simplification`, `documentation`, and `smells`.
+- `lenses`: `[{ name, prompt }]`, each from `agents/<name>.txt`. Scale the lenses to the change. Under about 150 changed lines (`git diff --shortstat DEFAULT_BRANCH...HEAD`), use `quality`, `implementation`, and `testing`. Above that, add `simplification`, `documentation`, and `smells`. Whatever the size, add `accessibility` when `git diff --name-only DEFAULT_BRANCH...HEAD` shows user interface files: XAML or AXAML, `*.Designer.cs`, Qt `.ui`, HTML, Razor, Blade, Twig, Vue, Svelte, JSX or TSX, or stylesheets.
 - `criticalLenses`: `["quality", "implementation"]`
 - `maxRounds`: 3
 
-The workflow returns its rounds: what was found, confirmed, refuted (with reasons), fixed, and left uncommitted. Tell the user a short list per round, including the refuted findings and why, so nothing is dropped silently, and warn about any leftovers. Append the rounds to the progress file.
+The workflow returns its rounds: what each lens checked, what was found, confirmed, refuted (with reasons), fixed, and left uncommitted. Tell the user a short list per round, including the refuted findings and why, so nothing is dropped silently, and warn about any leftovers. Append the rounds to the progress file.
+
+A lens that returns nothing is retried once. If it fails again, its area goes unreviewed, and the workflow lists it in `unreviewed` and does not report the review as clean. Name those lenses to the user and in the pull request body as not reviewed. That is a gap to report, not a reason to stop.
 
 If the Workflow tool is not available, do the same by hand: spawn the lens reviewers in parallel with the Agent tool, then give all their findings to one fixer. The fixer checks each finding before fixing it. After that, run re-check rounds with the critical lenses until clean or three rounds in all.
 
@@ -106,7 +108,7 @@ Run the review workflow once more with `startCritical: true` and `maxRounds: 2`.
 2. Push and open the pull request as `git.md` describes, according to the git mode. Title: the plan title. Body:
    - what the change does and why, from the plan's Overview
    - the tasks completed
-   - the review summary (rounds, what was fixed, what was refuted)
+   - the review summary (rounds, what was fixed, what was refuted, and any lens left unreviewed), and what the full sweep checked and found fine, a line per lens
    - the validation commands that passed
    - the plan's Post-Completion items, as things for the reviewer to check by hand
 3. Append "completed" to the progress file.

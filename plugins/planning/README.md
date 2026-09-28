@@ -13,8 +13,10 @@ share the `docs/plans/<number>-<task>.md` convention:
 4. **`plan-exec`** (skill) — executes the plan task by task, each in an isolated
    subagent that commits its own work. Then it reviews the branch with a
    workflow (`skills/plan-exec/workflows/review.js`): reviewers read it in
-   parallel through several lenses, a skeptic per file tries to refute each
-   finding, and a fixer handles what survives. An optional Codex pass and a
+   parallel through several lenses (with an accessibility lens whenever the
+   change touches the user interface), a skeptic per file tries to refute each
+   finding, and a fixer handles what survives. A lens that fails twice is
+   reported as unreviewed, never as clean. An optional Codex pass and a
    final critical-only re-check follow. It finishes by opening a pull request.
 
 How far the git side goes (uncommitted, commit, push, pull request) and whether

@@ -1,0 +1,22 @@
+Lens: accessibility of the user interface the change adds or touches, against WCAG 2.2 AA.
+
+In a user-facing app an accessibility barrier is a defect, not polish. One that keeps a keyboard or screen-reader user from finishing a task is critical; one that makes the task harder than it should be is major. Judge from the code, markup, and styles. Do not launch the app or open a browser: the user may be working with a screen reader, and a window that opens takes focus. Where only the screen would settle a finding (contrast over an image, text clipped at high DPI, overlapping controls), report it as minor and say in the detail that it needs a visual check, unless the values in the code settle it.
+
+Desktop (WinForms, WPF, WinUI, Avalonia, GTK, Qt, Electron, Tauri):
+- every control has an automation name, and a custom control implements its automation peer
+- every button, menu item, checkbox, radio button, tab page, and label that names an input has a mnemonic (`&` in WinForms and Qt, `_` in WPF, WinUI, Avalonia, and GTK), and no two siblings in one form or dialog share a letter; read the designer files (`*.Designer.cs`, XAML, `.ui`), not only the code-behind
+- the tab order follows the visual order, focus lands somewhere sensible when a dialog opens and goes back where it was when it closes, and Enter and Escape do what the dialog's buttons say
+- a status or progress change the user needs is announced, not only drawn
+- high contrast mode is respected: no hardcoded colors that ignore the system theme
+
+Web:
+- native elements before ARIA: a clickable `div` or `span` is a finding, and so is ARIA that contradicts the element it sits on
+- every input has a programmatic label, and an error is tied to its field and says how to fix it
+- images have text alternatives (empty for decorative ones), and icon-only buttons have an accessible name
+- headings and landmarks describe the structure, and the page declares its `lang`
+- everything works from the keyboard with no trap, focus stays visible (no `outline: none` without a replacement), and sticky or fixed content does not hide the focused element (2.4.11)
+- contrast from the declared colors is at least 4.5:1 for text and 3:1 for large text and UI components, and color is not the only signal
+- pointer targets are at least 24 by 24 CSS pixels (2.5.8), and dragging has a single-pointer alternative (2.5.7)
+- content that changes without a page load is announced through a live region; forms do not ask twice for what the user already entered (3.3.7), and sign-in needs no cognitive test (3.3.8)
+
+Cite the success criterion or the platform convention each finding breaks.
