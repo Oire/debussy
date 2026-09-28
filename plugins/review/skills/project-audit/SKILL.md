@@ -1,6 +1,6 @@
 ---
 name: project-audit
-description: "Run a two-reviewer audit of the current project: Codex (code-level review via external CLI) and Nigel (project-analyst agent, holistic polish/DX/a11y review), then implement the findings the user picks. Use when the user says 'project-audit', 'audit the project', 'audit this project', 'pre-release audit', 'release readiness check', 'polish pass', 'Nigel + Codex review', 'combined review', or 'quality audit'. Mode keywords the user may include: 'nigel-first', 'codex-first', 'nigel-only', 'codex-only' — pass the matched keyword as the skill argument."
+description: "Run a two-reviewer audit of the current project: Codex (code-level review via external CLI) and Nigel (project-analyst agent, holistic polish/DX/a11y review), then implement the findings the user picks. Use when the user says 'project-audit', 'audit the project', 'audit this project', 'pre-release audit', 'release readiness check', 'polish pass', 'Nigel + Codex review', 'combined review', or 'quality audit'. Also use to pick up a started audit: 'continue the audit', 'resume the audit', 'where did we get to on the audit'. Mode keywords the user may include: 'nigel-first', 'codex-first', 'nigel-only', 'codex-only' — pass the matched keyword as the skill argument."
 allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bash:*), Bash(command -v codex), Bash(git status:*), Bash(git fetch:*), Bash(git switch:*), Bash(git add:*), Bash(git commit:*), Bash(git push -u origin:*), Bash(git diff:*), Bash(git log:*), Bash(git rev-parse:*), Bash(git symbolic-ref:*), Bash(gh auth status), Bash(gh pr create:*), Bash(gh pr view:*), Agent, Workflow, AskUserQuestion, TaskCreate, TaskUpdate
 ---
 
@@ -52,16 +52,30 @@ rules. What is specific to an audit:
 
 - Before anything else, note which files already have uncommitted changes
   (`git status --porcelain`). They are the user's work: the audit reviews them
-  but never commits them. If a chosen fix has to touch one, make the edit, leave
-  that file uncommitted, and say so in the report.
+  but never commits them. If a chosen fix has to touch one, the fixer edits it
+  and leaves it uncommitted, and the final report says so.
 - If you're on the base branch, cut `audit-<YYYY-MM-DD>` from it as git.md
   describes. If you're already on another branch, stay there; that branch is what
   is being audited.
-- Commit once after each implemented triage round, with a message naming the
-  reviewer and what was fixed.
+- Each implemented triage round is one commit, made by the fixer (Step 4), with
+  a message naming the reviewer and what was fixed.
 - Push and open the pull request at the end, as far as the `git` setting says.
   If you stayed on an existing branch that already has an open pull request, push
   to it and don't open another.
+
+## Audit record
+
+The audit keeps a record at `.claude/project-audit/<branch>.md`: every finding
+with a stable id, and what the user decided about it.
+`${CLAUDE_PLUGIN_ROOT}/skills/project-audit/references/audit-record.md` gives
+its format. Update it as you go, not at the end; it is what a resumed audit
+starts from and what a later reviewer is told to leave alone.
+
+To resume, list `.claude/project-audit/*.md`. Take the record for the current
+branch, or ask which one if there are several and none matches; switch to its
+branch if you're not on it. Read it, tell the user in a few lines where the
+audit stands, and carry on from the first finding still `pending`, or from the
+mode's next step if none is.
 
 ## Prompts
 
@@ -92,6 +106,10 @@ review of the fixes, triage Codex findings, implement Codex fixes, push and pull
 request. Mark each `in_progress` when it starts and `completed` when done, and
 skip any the user opts out of.
 
+Then create the audit record with the branch, base, mode, date, and the files
+that already had the user's uncommitted changes. Add the windows answer when
+you have it.
+
 ### Step 2. First reviewer
 
 **Nigel** (`nigel-first`, `nigel-only`). If the project has a user interface,
@@ -120,7 +138,9 @@ Workflow({
 ```
 
 It returns `confirmed`, `suspected`, and `refuted` findings, the `coverage`
-each group reported, and any `failedGroups` whose area went uncovered. Treat the script as a template: to
+each group reported, and any `failedGroups` whose area went uncovered. Give the
+findings ids `N1`, `N2`, and so on, continuing from the last `N` id in the
+record, and add them to the record as `pending`, with the uncovered areas. Treat the script as a template: to
 narrow the audit (say, the user only asked about docs), pass `groups` with just
 those focus areas.
 
@@ -157,8 +177,9 @@ whether to continue with Nigel alone.
 
 Codex's findings get the same skeptic treatment as Nigel's before you see
 them. Parse each finding line into `{ id, file, line, severity, description }`,
-with ids `C1`, `C2`, and so on, severity one of critical, major, or minor, and
-an empty `file` when Codex gave no location. Then run:
+with ids `C1`, `C2`, and so on (continuing from the last `C` id in the
+record), severity one of critical, major, or minor, and an empty `file` when
+Codex gave no location. Then run:
 
 ```
 Workflow({
@@ -174,6 +195,18 @@ It returns `confirmed`, `suspected`, and `refuted` findings, each with the
 skeptic's note. Without the Workflow tool, spawn one `general-purpose` agent
 with the skeptic prompt and all the findings in place of `FINDINGS`, and sort
 its verdicts the same way. Skip this when Codex answered `NO ISSUES FOUND`.
+Add the findings to the record as `pending`, the refuted ones with the
+skeptic's reason.
+
+**A reviewer that runs again.** When the record already holds findings (the
+second reviewer in Step 5, a re-run in Step 6), add a paragraph to the end of
+the reviewer's prompt, the Nigel prompt before it goes into the workflow's
+`nigel` argument and the Codex prompt before you write it to its file: "These
+were already reported in this audit and either declined by the user or refuted
+on checking. Don't report them again unless the code they point at has changed
+since:", followed by the declined and refuted findings, one line each with what
+and where. If one comes back anyway, show it in triage marked as reported
+before, with the earlier decision, instead of dropping it.
 
 ### Step 3. Triage
 
@@ -191,14 +224,28 @@ Then ask with AskUserQuestion which to implement:
 - none of this reviewer's findings — move on;
 - stop the audit.
 
-Don't pre-filter or quietly drop findings; the user decides.
+Don't pre-filter or quietly drop findings; the user decides. Record each
+decision as the user makes it: the chosen findings stay `pending` until the
+fixer reports, and the rest become `declined`.
 
 ### Step 4. Implement
 
-Make the selected fixes directly, scoped to what was asked, with no drive-by
-refactors. If a finding needs a design decision, ask before implementing it.
-Build and run the project's tests. Then commit the round per the Git section and
-report one line per file touched.
+If a chosen finding plainly needs a design decision, ask about it now, and put
+the answer next to the finding. Then spawn one `general-purpose` fixer with the
+resolved `prompts/fixer.md`, placeholders filled as its notes say. The fixer
+works from the chosen findings alone, which keeps the fixes and the build
+output out of this conversation.
+
+From its report:
+- Record each finding as `implemented in <commit>` or `not fixed: <why>`.
+- A finding marked `DECISION:` needs the user: ask, then spawn another fixer for
+  those findings, with the answers added.
+- If validation failed, show what failed and ask how to proceed.
+- Run `git status --porcelain`. Paths outside `.claude/` that are uncommitted
+  and were not the user's to begin with are missing from the diff the next
+  reviewer reads, so warn about them.
+
+Tell the user one line per finding: fixed, or not fixed and why.
 
 ### Step 5. Second reviewer
 
@@ -222,7 +269,7 @@ most one re-run: looping until clean is plan-exec's job, not this skill's.
 Push and open the pull request as the `git` setting says, then report:
 - which reviewers ran and how many findings each produced (confirmed,
   suspected, and refuted);
-- which findings were implemented and which were skipped, so the user can
-  revisit them;
+- which findings were implemented and which were skipped, and that they stay
+  in the audit record (give its path) to revisit;
 - the branch, commit subjects, and pull request URL, and any files left
   uncommitted because they held the user's own changes.

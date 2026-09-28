@@ -17,6 +17,21 @@ Plugins: planning 0.4.0, review 0.5.0.
   its prompts through `scripts/resolve-file.sh`, so a file under
   `.claude/project-audit/prompts/` replaces the bundled one, as
   `.claude/exec-plan/` already does for plan-exec.
+- **project-audit keeps an audit record and can be resumed.** Every finding
+  gets a stable id and is recorded in `.claude/project-audit/<branch>.md` with
+  what the user decided, so "continue the audit" picks up where it stopped and
+  skipped findings stay there to revisit. A reviewer that runs a second time
+  is given the declined and refuted findings and asked not to raise them again
+  unless the code has changed.
+
+### Changed
+- project-audit hands the chosen findings to a fixer subagent
+  (`prompts/fixer.md`) instead of fixing them in the main conversation. The
+  fixer checks each finding against the code before changing it, returns
+  design questions instead of guessing, never commits files that held the
+  user's own changes, and commits the round.
+- Nigel's skeptic also refutes a finding whose proposed fix would make things
+  worse.
 - **An accessibility lens for plan-exec's review.** When the branch touches
   user interface files (XAML, WinForms designer files, Qt `.ui`, HTML and the
   common template and component formats, stylesheets), a reviewer checks the

@@ -25,6 +25,13 @@ Project review and release-readiness auditing.
   can override any of the prompts with a file of the same path under
   `.claude/project-audit/`.
 
+  You choose which findings get fixed, and a fixer subagent implements them,
+  checks each one against the code first, and commits the round. The audit
+  keeps a record in `.claude/project-audit/<branch>.md` of every finding and
+  what you decided, so an interrupted audit can be resumed ("continue the
+  audit"), skipped findings stay there to revisit, and a reviewer that runs
+  again is told not to raise what you declined or what was refuted.
+
 The skill calls the agent, so they are packaged together.
 
 For a project that renders HTML, Nigel measures the running page with a bundled
