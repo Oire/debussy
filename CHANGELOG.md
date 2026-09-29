@@ -24,6 +24,9 @@ Plugins: planning 0.4.1, review 0.5.1, write-manual 0.5.1.
   fallback is `git push -u origin HEAD`. No step names the branch. The change
   is in the shared `git.md` of plan-exec (and so plan-make), project-audit and
   write-manual, and in the `allowed-tools` of plan-exec and project-audit.
+- **Pull requests are assigned to the user who opened them.** `gh pr create`
+  now passes `--assignee @me`, so every pull request a skill opens lands in the
+  signed-in user's assigned list.
 
 ## [0.14.0] - 2026-09-28
 

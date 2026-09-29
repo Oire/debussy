@@ -52,8 +52,10 @@ in your commits, so stop and ask the user what to do with them.
   `git push -u origin HEAD`, which does the same. Never name the branch or add
   a refspec. If the remote rejects the push, stop and report; do not force.
 - `pr`: if `gh` is installed and authenticated (`gh auth status`), open the pull
-  request with `gh pr create --base <base> --head <branch> --title "<title>"
-  --body-file <file>`, writing the body to a temporary file first. The body
+  request with `gh pr create --base <base> --head <branch> --assignee @me
+  --title "<title>" --body-file <file>`, writing the body to a temporary file
+  first. `@me` assigns the pull request to the user `gh` is signed in as, so it
+  lands in their assigned list; do not assign anyone else. The body
   says what changed and why, how it was verified, and what the reviewer should
   look at. Without `gh`, push and give the user the compare URL instead.
 - Finish by telling the user the branch, the commits (subject lines), and the
