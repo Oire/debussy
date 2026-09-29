@@ -9,15 +9,21 @@ Plugins: planning 0.4.1, review 0.5.1, write-manual 0.5.1.
 
 ### Fixed
 - **A new branch no longer tracks the base branch.** `references/git.md` cut
-  work branches with `git switch -c <branch> origin/<base>`. By default git
-  makes such a branch track `origin/<base>`, so `git status` and `git pull`
-  compared it with the base, and a push without `-u` (or with
-  `push.autoSetupRemote`, which only acts when no upstream exists) left it
-  following the base. Branches are now cut with `--no-track`, so the
-  `git push -u origin <branch>` step sets the branch's own upstream. A resumed
-  branch that still tracks the base has that upstream unset first. The change
+  work branches with `git switch -c <branch> origin/<base>`, and git makes a
+  branch cut from a remote branch track it. The new branch then followed
+  `origin/<base>`: `git status` and `git pull` compared it with the base, and
+  a push relying on `push.autoSetupRemote` (which only acts when no upstream
+  exists) left it that way.
+
+### Changed
+- **The git steps are the ones a person types.** A branch is cut by updating
+  the base (`git switch <base>`, `git pull --ff-only`) and running
+  `git switch -c <branch>`, so it starts with no upstream. The push is a plain
+  `git push`, which with `push.autoSetupRemote` also creates and tracks the
+  remote branch. When git answers that the branch has no upstream, the
+  fallback is `git push -u origin HEAD`. No step names the branch. The change
   is in the shared `git.md` of plan-exec (and so plan-make), project-audit and
-  write-manual.
+  write-manual, and in the `allowed-tools` of plan-exec and project-audit.
 
 ## [0.14.0] - 2026-09-28
 
