@@ -14,17 +14,19 @@ With `git` set to `none`, skip everything below except the attribution rule.
 
 ## Branch
 
-Work starts on a new branch cut from the current tip of the base branch, not
-from whatever happens to be checked out and not from a stale local copy:
+Work starts on a new branch cut from the up-to-date base branch, not from
+whatever happens to be checked out:
 
 ```
-git fetch origin
-git switch -c <branch> origin/<base>
+git switch <base>
+git pull --ff-only
+git switch -c <branch>
 ```
 
-Without an `origin` remote, cut from the local `<base>` instead. If `<branch>`
-already exists locally, this is a resumed run: `git switch <branch>` and carry
-on. Branch names are short, lowercase, and hyphenated, and describe the change.
+Skip the pull when there is no `origin` remote. If it refuses because the local
+base has diverged from the remote, stop and ask. If `<branch>` already exists
+locally, this is a resumed run: `git switch <branch>` and carry on. Branch
+names are short, lowercase, and hyphenated, and describe the change.
 
 Before switching, check `git status --porcelain`. Changes that are not yours
 (anything the skill did not create) travel with a branch switch and would end up
@@ -44,11 +46,16 @@ in your commits, so stop and ask the user what to do with them.
 
 ## Push and pull request
 
-- `push`: after the final commit, `git push -u origin <branch>`. Plain push
-  only. If the remote rejects it, stop and report; do not force.
+- `push`: after the final commit, a plain `git push`. With
+  `push.autoSetupRemote` on, that also creates the remote branch and tracks
+  it. If git answers that the branch has no upstream, run
+  `git push -u origin HEAD`, which does the same. Never name the branch or add
+  a refspec. If the remote rejects the push, stop and report; do not force.
 - `pr`: if `gh` is installed and authenticated (`gh auth status`), open the pull
-  request with `gh pr create --base <base> --head <branch> --title "<title>"
-  --body-file <file>`, writing the body to a temporary file first. The body
+  request with `gh pr create --base <base> --head <branch> --assignee @me
+  --title "<title>" --body-file <file>`, writing the body to a temporary file
+  first. `@me` assigns the pull request to the user `gh` is signed in as, so it
+  lands in their assigned list; do not assign anyone else. The body
   says what changed and why, how it was verified, and what the reviewer should
   look at. Without `gh`, push and give the user the compare URL instead.
 - Finish by telling the user the branch, the commits (subject lines), and the

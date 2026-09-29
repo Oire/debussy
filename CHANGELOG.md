@@ -3,6 +3,31 @@
 All notable changes to this repo are recorded here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.14.1] - 2026-09-29
+
+Plugins: planning 0.4.1, review 0.5.1, write-manual 0.5.1.
+
+### Fixed
+- **A new branch no longer tracks the base branch.** `references/git.md` cut
+  work branches with `git switch -c <branch> origin/<base>`, and git makes a
+  branch cut from a remote branch track it. The new branch then followed
+  `origin/<base>`: `git status` and `git pull` compared it with the base, and
+  a push relying on `push.autoSetupRemote` (which only acts when no upstream
+  exists) left it that way.
+
+### Changed
+- **The git steps are the ones a person types.** A branch is cut by updating
+  the base (`git switch <base>`, `git pull --ff-only`) and running
+  `git switch -c <branch>`, so it starts with no upstream. The push is a plain
+  `git push`, which with `push.autoSetupRemote` also creates and tracks the
+  remote branch. When git answers that the branch has no upstream, the
+  fallback is `git push -u origin HEAD`. No step names the branch. The change
+  is in the shared `git.md` of plan-exec (and so plan-make), project-audit and
+  write-manual, and in the `allowed-tools` of plan-exec and project-audit.
+- **Pull requests are assigned to the user who opened them.** `gh pr create`
+  now passes `--assignee @me`, so every pull request a skill opens lands in the
+  signed-in user's assigned list.
+
 ## [0.14.0] - 2026-09-28
 
 Plugins: planning 0.4.0, review 0.5.0.

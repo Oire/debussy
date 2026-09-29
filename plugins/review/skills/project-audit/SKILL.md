@@ -1,7 +1,7 @@
 ---
 name: project-audit
 description: "Run a two-reviewer audit of the current project: Codex (code-level review via external CLI) and Nigel (project-analyst agent, holistic polish/DX/a11y review), then implement the findings the user picks. Use when the user says 'project-audit', 'audit the project', 'audit this project', 'pre-release audit', 'release readiness check', 'polish pass', 'Nigel + Codex review', 'combined review', or 'quality audit'. Also use to pick up a started audit: 'continue the audit', 'resume the audit', 'where did we get to on the audit'. Mode keywords the user may include: 'nigel-first', 'codex-first', 'nigel-only', 'codex-only' — pass the matched keyword as the skill argument."
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bash:*), Bash(command -v codex), Bash(git status:*), Bash(git fetch:*), Bash(git switch:*), Bash(git add:*), Bash(git commit:*), Bash(git push -u origin:*), Bash(git diff:*), Bash(git log:*), Bash(git rev-parse:*), Bash(git symbolic-ref:*), Bash(gh auth status), Bash(gh pr create:*), Bash(gh pr view:*), Agent, Workflow, AskUserQuestion, TaskCreate, TaskUpdate
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bash:*), Bash(command -v codex), Bash(git status:*), Bash(git fetch:*), Bash(git switch:*), Bash(git add:*), Bash(git commit:*), Bash(git pull --ff-only), Bash(git push), Bash(git push -u origin HEAD), Bash(git diff:*), Bash(git log:*), Bash(git rev-parse:*), Bash(git symbolic-ref:*), Bash(gh auth status), Bash(gh pr create:*), Bash(gh pr view:*), Agent, Workflow, AskUserQuestion, TaskCreate, TaskUpdate
 ---
 
 # project-audit

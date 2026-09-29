@@ -1,7 +1,7 @@
 ---
 name: plan-exec
 description: "Execute an implementation plan from docs/plans/ task by task in isolated subagents, review the result, and open a pull request. Use when the user says 'plan-exec', 'execute plan', 'run plan', 'implement the plan', or wants a plan file carried out. Also use to pick up an interrupted run: 'continue the plan', 'resume the plan', 'resume plan-exec'."
-allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bash:*), Bash(git status:*), Bash(git fetch:*), Bash(git switch:*), Bash(git add:*), Bash(git commit:*), Bash(git push -u origin:*), Bash(git diff:*), Bash(git log:*), Bash(git rev-parse:*), Bash(git symbolic-ref:*), Bash(gh auth status), Bash(gh pr create:*), Agent, Workflow, AskUserQuestion, TaskCreate, TaskUpdate
+allowed-tools: Read, Write, Edit, Glob, Grep, Bash(bash:*), Bash(git status:*), Bash(git fetch:*), Bash(git switch:*), Bash(git add:*), Bash(git commit:*), Bash(git pull --ff-only), Bash(git push), Bash(git push -u origin HEAD), Bash(git diff:*), Bash(git log:*), Bash(git rev-parse:*), Bash(git symbolic-ref:*), Bash(gh auth status), Bash(gh pr create:*), Agent, Workflow, AskUserQuestion, TaskCreate, TaskUpdate
 ---
 
 # plan-exec
