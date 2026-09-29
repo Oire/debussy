@@ -19,12 +19,20 @@ from whatever happens to be checked out and not from a stale local copy:
 
 ```
 git fetch origin
-git switch -c <branch> origin/<base>
+git switch --no-track -c <branch> origin/<base>
 ```
+
+`--no-track` matters. By default git makes a branch cut from a remote branch
+track it, so the new branch would follow `origin/<base>`: `git status` and
+`git pull` would compare it with the base, and a later push would not give it
+an upstream of its own. With no upstream, `git push -u origin <branch>` (see
+below) sets the right one.
 
 Without an `origin` remote, cut from the local `<base>` instead. If `<branch>`
 already exists locally, this is a resumed run: `git switch <branch>` and carry
-on. Branch names are short, lowercase, and hyphenated, and describe the change.
+on. If `git branch -vv` then shows it tracking the base, run
+`git branch --unset-upstream` so the push can set its own. Branch names are
+short, lowercase, and hyphenated, and describe the change.
 
 Before switching, check `git status --porcelain`. Changes that are not yours
 (anything the skill did not create) travel with a branch switch and would end up

@@ -3,6 +3,22 @@
 All notable changes to this repo are recorded here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.14.1] - 2026-09-29
+
+Plugins: planning 0.4.1, review 0.5.1, write-manual 0.5.1.
+
+### Fixed
+- **A new branch no longer tracks the base branch.** `references/git.md` cut
+  work branches with `git switch -c <branch> origin/<base>`. By default git
+  makes such a branch track `origin/<base>`, so `git status` and `git pull`
+  compared it with the base, and a push without `-u` (or with
+  `push.autoSetupRemote`, which only acts when no upstream exists) left it
+  following the base. Branches are now cut with `--no-track`, so the
+  `git push -u origin <branch>` step sets the branch's own upstream. A resumed
+  branch that still tracks the base has that upstream unset first. The change
+  is in the shared `git.md` of plan-exec (and so plan-make), project-audit and
+  write-manual.
+
 ## [0.14.0] - 2026-09-28
 
 Plugins: planning 0.4.0, review 0.5.0.
