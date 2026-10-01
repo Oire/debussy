@@ -21,7 +21,7 @@ The plan; the project's CLAUDE.md for its conventions; and enough of the code th
 - **Correctness.** The approach solves the stated problem, with no missing step that would leave it unsolved, and it handles the edge cases the problem implies.
 - **Scope.** Nothing unrelated is bundled in, and the tasks come in an order where each one can be validated.
 - **Over-engineering.** Look for abstractions with one implementation, generality nobody asked for, layers that only pass calls through, and "just in case" features. Flag these as questions, not demands: the author may know something you don't. Complexity inherent to the problem, and patterns the codebase already uses, are not over-engineering.
-- **Tasks.** Each task is one logical unit with a specific name, a Files block, and checkboxes concrete enough to act on. Tests are separate items covering success and error paths, unless the task is UI-only or the user opted out of tests.
+- **Tasks.** Each task is one logical unit with a specific name, a `#### Files` list, and a `#### Steps` list of checkboxes concrete enough to act on. Tests are separate items covering success and error paths, unless the task is UI-only or the user opted out of tests.
 - **Fit.** Naming, libraries, and structure match the project's conventions and existing code.
 
 Report only what you are confident about. Put a doubt as a question.

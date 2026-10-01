@@ -3,6 +3,19 @@
 All notable changes to this repo are recorded here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.14.2] - 2026-10-01
+
+Plugins: planning 0.4.2.
+
+### Fixed
+- **A task's files and its steps are two lists.** The plan template put the
+  `**Files:**` list and the checkboxes under one bold label with only a blank
+  line between them, so Markdown made them one list: a screen reader announced
+  the files and the steps as a single list, and the blank line spread every
+  item into its own paragraph. Each task now has `#### Files` and `#### Steps`
+  headings under its `### Task N:` heading, which split the lists and can be
+  reached with heading navigation. plan-review looks for both.
+
 ## [0.14.1] - 2026-09-29
 
 Plugins: planning 0.4.1, review 0.5.1, write-manual 0.5.1.

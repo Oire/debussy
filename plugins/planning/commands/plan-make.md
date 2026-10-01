@@ -69,10 +69,11 @@ What changes, what problem it solves, and how it fits the existing system.
 
 ### Task 1: <what this task accomplishes, specifically>
 
-**Files:**
+#### Files
 - Create: `path/to/new_file`
 - Modify: `path/to/existing`
 
+#### Steps
 - [ ] <specific change, naming the file>
 - [ ] <specific change>
 - [ ] tests for <behavior>: success cases
@@ -89,6 +90,8 @@ Data structures, formats, and processing flow, where the tasks need them.
 ## Post-completion
 Things outside this codebase, with no checkboxes: manual and accessibility testing, changes needed in consuming projects, deployment configuration.
 ```
+
+Keep the Files and Steps headings even when a task is short. Without a heading between them, Markdown runs the files and the checkboxes together into one list, and a screen reader announces them as one list.
 
 Size each task as one logical unit (a function, an endpoint, a component), usually around five checkboxes, with tests as their own items. A task named "Core logic" is too vague for a subagent to act on; say what the logic does.
 
