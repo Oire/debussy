@@ -3,6 +3,29 @@
 All notable changes to this repo are recorded here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.14.4] - 2026-10-19
+
+Plugins: planning 0.4.4, write-manual 0.5.3.
+
+### Changed
+- **Manual review asks PlanCake where the notes are.** When `plancake` is on
+  the PATH (`plancake.exe` under WSL), manual review finds notes with
+  `plancake list <file> --json`, which gives each note's lines, its text
+  without the indentation, and the block it belongs to, and verifies with
+  `plancake check`, which exits with 0 once no note is left. It passes the
+  configured `noteMarkers` on the command line, one run per marker, so PlanCake
+  reads the same markers as the skill whatever its own settings say. Without
+  PlanCake, or when it fails, the fixed-string search stays. The change is in
+  the shared `manual-review.md` of plan-exec (and so plan-make) and
+  write-manual.
+
+### Fixed
+- **Resuming plan-exec keeps the record of the stopped run.** Setup ran
+  `init-progress.sh` on a fresh start and a resumed run alike, and the script
+  wrote a new header over the file, so a resumed run lost everything the
+  stopped one had recorded. A progress file that already has content is now
+  kept, with a `Resumed` line added.
+
 ## [0.14.3] - 2026-10-19
 
 Plugins: planning 0.4.3, review 0.5.2, write-manual 0.5.2.

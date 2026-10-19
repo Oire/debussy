@@ -16,6 +16,17 @@ what I put in the file", not "carry on with the plan". Then:
    string, not a regular expression: markers like `[usernote]` or `%%%` contain
    characters a regex would misread. Count them. Notes can sit anywhere,
    including inside code blocks, tables, and HTML.
+
+   When `plancake` is on the PATH (`plancake.exe` under WSL, given a relative
+   path), let PlanCake find them instead: run `plancake list <file> --json`
+   once per configured marker, and pass the marker, so it reads the markers in
+   effect here rather than the ones in its own settings:
+   `--open-marker '[usernote]' --close-marker '[/usernote]'` for a pair,
+   `--open-marker '!USERNOTE!' --single-token` for a token. Each entry gives
+   the note's first and last line, its `text` with the indentation taken off,
+   and the block it belongs to: `blockStartLine`, `blockEndLine`, `blockKind`,
+   and `blockExcerpt`. Exit code 1 is an error, printed on the error output;
+   say so and fall back to the search.
 2. **Find the edits made without a marker.** With the file committed,
    `git diff -- <file>` shows every line the user added, changed, or deleted;
    otherwise compare with the version you last wrote. Those edits are the
@@ -33,7 +44,8 @@ what I put in the file", not "carry on with the plan". Then:
      about: a paragraph, heading, list item, table row, or code block. Notes on
      the same block follow it in the order they were left. Each line of a note
      is indented to match its block, out to the text of a list item, and that
-     indentation is not part of the note.
+     indentation is not part of the note. `plancake list` names that block for
+     you; a note in the middle of a line belongs to the block it sits in.
 4. **Stop and ask at the slightest doubt.** The user reviews by hand because
    they want their intent carried out exactly, so a guess costs more than a
    question. A note is in doubt when:
@@ -57,7 +69,9 @@ what I put in the file", not "carry on with the plan". Then:
    around it stay as they were; a note inside a line leaves the rest of that
    line. Leave a note in place only while its question to the user is open.
 6. **Verify.** Search again for every marker. Only notes still waiting on the
-   user may remain.
+   user may remain. With PlanCake, run `plancake check <file>` with the same
+   marker options as before: it prints the count, and exits with 0 when no
+   note is left, 3 when some are, and 1 on an error.
 7. **Report:** how many notes you found; one line per note saying what you did,
    or the question it is waiting on; and the direct edits you noticed and how
    you treated them. Then offer another round of review, since the user may
