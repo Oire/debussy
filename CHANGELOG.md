@@ -22,6 +22,14 @@ Plugins: planning 0.4.3, review 0.5.2, write-manual 0.5.2.
   plan-make), project-audit and write-manual, and in the shared
   `manual-review.md` of plan-exec and write-manual.
 
+### Fixed
+- **plan-exec cleans up after itself.** A finished run left its progress file
+  and the Codex prompt in `.claude/exec-plan/` for good. The Finish step now
+  runs `scripts/clean-run.sh`, which deletes those two and the directories that
+  leaves empty. It touches nothing else there, because a project's prompt and
+  lens overrides live in the same directory. A run that stops before Finish
+  keeps its progress file, which is what lets it be resumed.
+
 ## [0.14.2] - 2026-10-01
 
 Plugins: planning 0.4.2.

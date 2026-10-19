@@ -16,8 +16,7 @@ What the orchestrator appends:
 - `task N: <title> - completed`, or `- failed (retry N)`, or `- blocked: <question>` and later the user's answer
 - `review round N (<full sweep | critical re-check>)`, followed by what was confirmed, what was refuted and why, and what was fixed
 - `codex round N` with Codex's findings, then the fixer's report
-- `completed` at the end
 
 Task subagents and the fixer append their own details: files modified, tests, validation, and what was fixed and what was not.
 
-The file lives under `.claude/`, so it is never committed.
+The file lives under `.claude/`, so it is never committed. It lasts as long as the run: the Finish step deletes it with `clean-run.sh` once the work has gone as far as the git mode allows, and a run that stops earlier keeps it to be resumed from.

@@ -111,5 +111,5 @@ Run the review workflow once more with `startCritical: true` and `maxRounds: 2`.
    - the review summary (rounds, what was fixed, what was refuted, and any lens left unreviewed), and what the full sweep checked and found fine, a line per lens
    - the validation commands that passed
    - the plan's Post-Completion items, as things for the reviewer to check by hand
-3. Append "completed" to the progress file.
+3. Remove the run's scratch state: `bash ${CLAUDE_PLUGIN_ROOT}/skills/plan-exec/scripts/clean-run.sh <progress-file>`. It deletes the progress file and the Codex prompt, and the directories that leaves empty, but not a project's overrides beside them. What the progress file recorded is in the pull request body by now, if there is one, and goes into your report below. A run that stops before this step keeps its progress file, since that is what lets it be resumed.
 4. Report to the user: tasks done, review outcome, the branch, and the pull request URL. With git mode `none`, say instead that the changes are uncommitted in the working tree.
