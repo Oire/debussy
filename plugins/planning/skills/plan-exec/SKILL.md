@@ -40,7 +40,7 @@ Arguments: `$ARGUMENTS` is the plan path. Without it, list `docs/plans/*.md` (no
    - On the base branch: cut the plan's branch as `git.md` describes. If the plan file itself is uncommitted, it comes along; commit it first as "Add plan: <title>".
    - On any other branch: ask whether to stack the plan on it or cut the plan's branch from the base.
    - With git mode `none`, skip all of this and stay where you are.
-5. Progress file: `bash ${CLAUDE_PLUGIN_ROOT}/skills/plan-exec/scripts/init-progress.sh .claude/exec-plan/progress/<plan-stem>.txt <plan-path> <branch>`, then tell the user its path. Append to it only through `scripts/append-progress.sh`. `references/prompts/progress-file.md` says what goes in.
+5. Progress file: `bash ${CLAUDE_PLUGIN_ROOT}/skills/plan-exec/scripts/init-progress.sh .claude/exec-plan/progress/<plan-stem>.txt <plan-path> <branch>`, then tell the user its path. On a resumed run the file is already there: the script keeps it and adds a "Resumed" line, so read it to see what the stopped run got through. Append to it only through `scripts/append-progress.sh`. `references/prompts/progress-file.md` says what goes in.
 6. Create a task-list entry per plan task, plus "Review", "Codex review", "Final re-check", and "Finish". Mark each in progress and completed as you go.
 
 ## Prompts

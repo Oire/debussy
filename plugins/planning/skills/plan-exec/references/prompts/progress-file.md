@@ -10,7 +10,9 @@ Started: <timestamp>
 ---
 ```
 
-Everything after that is appended through `append-progress.sh`, never with `cat >>`, `echo >>`, or a heredoc. The script timestamps a one-line message, or appends stdin verbatim when given no message.
+When the file already has content, the run is a resumed one: `init-progress.sh` keeps everything and adds `Resumed: <timestamp> on <branch-name>`.
+
+Everything after the header is appended through `append-progress.sh`, never with `cat >>`, `echo >>`, or a heredoc. The script timestamps a one-line message, or appends stdin verbatim when given no message.
 
 What the orchestrator appends:
 - `task N: <title> - completed`, or `- failed (retry N)`, or `- blocked: <question>` and later the user's answer
