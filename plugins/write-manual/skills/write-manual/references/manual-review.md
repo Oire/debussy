@@ -6,7 +6,9 @@ copy of this file.
 
 When you hand the file over, tell the user its path and the note markers in
 effect (`noteMarkers` in `settings.md`), so they know how to leave notes. They
-edit the file in their own editor and then say they are done: "done", "go",
+write notes in their own editor or in
+[PlanCake](https://github.com/Oire/plan-cake), which shows the file rendered
+and writes each note into it, and then say they are done: "done", "go",
 "continue", "ready", or anything like it. At that point the word means "act on
 what I put in the file", not "carry on with the plan". Then:
 
@@ -22,6 +24,16 @@ what I put in the file", not "carry on with the plan". Then:
    whether it is an instruction, an objection, or a question. A question gets
    an answer in your reply, and a change to the file when the answer implies
    one.
+   - A note is Markdown. It can run over several lines and hold lists,
+     emphasis, links, code spans, and fenced code: that is how the user wrote
+     it, not text to copy into the file. A list is several requests, and a code
+     span names a thing. A fence inside a pair-marked note belongs to the note,
+     so the closing marker after it still ends the note.
+   - PlanCake writes a note on its own lines right after the block it is
+     about: a paragraph, heading, list item, table row, or code block. Notes on
+     the same block follow it in the order they were left. Each line of a note
+     is indented to match its block, out to the text of a list item, and that
+     indentation is not part of the note.
 4. **Stop and ask at the slightest doubt.** The user reviews by hand because
    they want their intent carried out exactly, so a guess costs more than a
    question. A note is in doubt when:
@@ -32,14 +44,18 @@ what I put in the file", not "carry on with the plan". Then:
      approach, the scope);
    - it would mean changing something the note does not point at;
    - something looks like a note but does not use a configured marker (`TODO:`,
-     `??`, a different marker).
+     `??`, a different marker);
+   - a marker may be quoted rather than used, as in a code span or a passage
+     that documents the markers themselves.
 
    Ask about every doubtful note in one round, quoting each note and where it
    sits, and wait for the answer. Meanwhile, carry out the clear notes, unless a
    doubtful one could change them.
 5. **Act, then remove.** Carry out each note, then delete the note and its
-   markers from the file: notes are instructions, not content. Leave a note in
-   place only while its question to the user is open.
+   markers from the file: notes are instructions, not content. A note on lines
+   of its own goes with those lines, indentation included, and the blank lines
+   around it stay as they were; a note inside a line leaves the rest of that
+   line. Leave a note in place only while its question to the user is open.
 6. **Verify.** Search again for every marker. Only notes still waiting on the
    user may remain.
 7. **Report:** how many notes you found; one line per note saying what you did,

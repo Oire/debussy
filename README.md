@@ -106,7 +106,7 @@ you review a file by hand, create `.claude/debussy.json` in a project, or
   "git": "pr",
   "baseBranch": "",
   "aiAttribution": false,
-  "noteMarkers": ["!USERNOTE!"]
+  "noteMarkers": ["[usernote]...[/usernote]", "!USERNOTE!"]
 }
 ```
 
@@ -122,9 +122,12 @@ you review a file by hand, create `.claude/debussy.json` in a project, or
 - `noteMarkers`: how you leave notes in a plan or manual you are reviewing by
   hand. An entry is a single token (`!USERNOTE!`, `@@`, `%%%`), where the note
   runs to the end of the line, or an opening and closing pair written with
-  `...` (`[usernote]...[/usernote]`). When you then say "done", "go", or
-  "continue", the skill acts on every note, removes it, and asks rather than
-  guesses at the slightest doubt.
+  `...` (`[usernote]...[/usernote]`). A note can be written in Markdown. The
+  default takes both of those: the pair is what
+  [PlanCake](https://github.com/Oire/plan-cake) writes when you leave a note
+  on a rendered plan, so if you change PlanCake's markers, set the same ones
+  here. When you then say "done", "go", or "continue", the skill acts on every
+  note, removes it, and asks rather than guesses at the slightest doubt.
 
 `aiAttribution` is an instruction to the model. To also switch off the
 attribution Claude Code itself adds, set `attribution` in your Claude Code

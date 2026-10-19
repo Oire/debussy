@@ -10,7 +10,7 @@ identical copy of this file.
   "git": "pr",
   "baseBranch": "",
   "aiAttribution": false,
-  "noteMarkers": ["!USERNOTE!"]
+  "noteMarkers": ["[usernote]...[/usernote]", "!USERNOTE!"]
 }
 ```
 
@@ -39,4 +39,8 @@ identical copy of this file.
     `[usernote]...[/usernote]`: the note is everything between the two, across
     lines if need be.
 
-  Default: `["!USERNOTE!"]`.
+  The text of a note is Markdown. Default:
+  `["[usernote]...[/usernote]", "!USERNOTE!"]`: the pair is what
+  [PlanCake](https://github.com/Oire/plan-cake) writes unless its settings
+  change it, and the token is quick to type by hand. A user who changes
+  PlanCake's markers sets the same ones here.

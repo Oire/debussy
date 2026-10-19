@@ -3,6 +3,25 @@
 All notable changes to this repo are recorded here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.14.3] - 2026-10-19
+
+Plugins: planning 0.4.3, review 0.5.2, write-manual 0.5.2.
+
+### Changed
+- **PlanCake's note markers work out of the box.**
+  [PlanCake](https://github.com/Oire/plan-cake) renders a Markdown file and
+  writes a note after the block it is about, between `[usernote]` and
+  `[/usernote]`. `noteMarkers` now defaults to
+  `["[usernote]...[/usernote]", "!USERNOTE!"]`, so those notes are found
+  without any setting and a hand-typed `!USERNOTE!` still works. Manual review
+  reads a note as Markdown (a list in it is several requests, a fence in it is
+  part of it), knows that a PlanCake note sits on its own indented lines after
+  its block, removes such a note with its lines and leaves the blank lines
+  around it alone, and asks about a marker that may be quoted rather than
+  used. The change is in the shared `settings.md` of plan-exec (and so
+  plan-make), project-audit and write-manual, and in the shared
+  `manual-review.md` of plan-exec and write-manual.
+
 ## [0.14.2] - 2026-10-01
 
 Plugins: planning 0.4.2.
