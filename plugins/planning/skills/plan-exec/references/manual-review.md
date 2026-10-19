@@ -10,7 +10,26 @@ write notes in their own editor or in
 [PlanCake](https://github.com/Oire/plan-cake), which shows the file rendered
 and writes each note into it, and then say they are done: "done", "go",
 "continue", "ready", or anything like it. At that point the word means "act on
-what I put in the file", not "carry on with the plan". Then:
+what I put in the file", not "carry on with the plan".
+
+Unless `openInPlanCake` is `false`, open the file in PlanCake for them when it
+is installed, and say so in one line. PlanCake is a window, so start it in a
+way that returns at once; otherwise the shell waits until the user closes it:
+
+- On Windows, when `command -v plancake` finds it, run
+  `cmd //c start "" plancake "<file>"` from Bash or
+  `Start-Process plancake -ArgumentList '"<file>"'` from PowerShell. A path
+  relative to the working directory works.
+- Under WSL, when `command -v plancake.exe` finds it, run
+  `(plancake.exe "$(wslpath -w <file>)" > /dev/null 2>&1 &)`. The user may have
+  a `pk` function that does the same, but a non-interactive shell does not load
+  their profile and cannot see it, so do not look for one.
+- Anywhere else, or when neither is found, open nothing.
+
+In later rounds the window is already showing the file and reloads it when you
+change it. Opening the same file again only brings that window to the front.
+
+Then, once the user says they are done:
 
 1. **Find every note.** Search the file for each configured marker as a fixed
    string, not a regular expression: markers like `[usernote]` or `%%%` contain

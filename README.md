@@ -106,7 +106,8 @@ you review a file by hand, create `.claude/debussy.json` in a project, or
   "git": "pr",
   "baseBranch": "",
   "aiAttribution": false,
-  "noteMarkers": ["[usernote]...[/usernote]", "!USERNOTE!"]
+  "noteMarkers": ["[usernote]...[/usernote]", "!USERNOTE!"],
+  "openInPlanCake": true
 }
 ```
 
@@ -128,6 +129,10 @@ you review a file by hand, create `.claude/debussy.json` in a project, or
   on a rendered plan, so if you change PlanCake's markers, set the same ones
   here. When you then say "done", "go", or "continue", the skill acts on every
   note, removes it, and asks rather than guesses at the slightest doubt.
+- `openInPlanCake`: `true` (the default) opens the file you are asked to review
+  in PlanCake when it is installed, on Windows or from WSL. Set it to `false`
+  to review in your own editor; the skill still uses PlanCake to find your
+  notes.
 
 `aiAttribution` is an instruction to the model. To also switch off the
 attribution Claude Code itself adds, set `attribution` in your Claude Code

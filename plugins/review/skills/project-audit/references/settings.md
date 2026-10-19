@@ -10,7 +10,8 @@ identical copy of this file.
   "git": "pr",
   "baseBranch": "",
   "aiAttribution": false,
-  "noteMarkers": ["[usernote]...[/usernote]", "!USERNOTE!"]
+  "noteMarkers": ["[usernote]...[/usernote]", "!USERNOTE!"],
+  "openInPlanCake": true
 }
 ```
 
@@ -44,3 +45,7 @@ identical copy of this file.
   [PlanCake](https://github.com/Oire/plan-cake) writes unless its settings
   change it, and the token is quick to type by hand. A user who changes
   PlanCake's markers sets the same ones here.
+- `openInPlanCake` — `true` (default): when PlanCake is installed, a skill
+  that hands the user a file to review by hand opens it there. `false`: it only
+  says which file to review, for a user who would rather use their editor.
+  Either way, an installed PlanCake is still used to find the notes.

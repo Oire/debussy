@@ -236,7 +236,7 @@ Report the verification results to the user:
 }
 ```
 
-**If the user has feedback**: they may describe it, or annotate the manual file itself using their note markers. When they say they are done ("done", "go", "continue"), gather every note and direct edit as `$SKILL_DIR/references/manual-review.md` describes, and settle every doubt with the user before anything is revised. You don't edit manual content yourself, so hand the writer each note with its location and surrounding text, the direct edits to keep, and the instruction to remove the notes. After the writer returns, search for the markers again; none may remain. Then re-verify and present again. Repeat until the user approves or stops.
+**If the user has feedback**: they may describe it, or annotate the manual file itself using their note markers. When they choose to annotate, hand the file over as `$SKILL_DIR/references/manual-review.md` describes, which opens it in PlanCake when that is installed. When they say they are done ("done", "go", "continue"), gather every note and direct edit as `$SKILL_DIR/references/manual-review.md` describes, and settle every doubt with the user before anything is revised. You don't edit manual content yourself, so hand the writer each note with its location and surrounding text, the direct edits to keep, and the instruction to remove the notes. After the writer returns, search for the markers again; none may remain. Then re-verify and present again. Repeat until the user approves or stops.
 
 **On approval** (or "Stop here"), commit the English manual per the Git section.
 

@@ -100,6 +100,6 @@ Size each task as one logical unit (a function, an endpoint, a component), usual
 Unless the git mode is `none`, commit the plan on its branch as "Add plan: <title>". Do not push yet; plan-exec pushes when the work is done. Then tell the user the plan path and branch, and ask what's next:
 
 - **Auto review**: run the `planning:plan-review` agent on the plan, apply the fixes the user agrees with, commit them, and ask again.
-- **Manual review**: the user edits the plan in their editor and leaves notes with their note markers. When they say they are done ("done", "go", "continue"), work through every note and edit as `${CLAUDE_PLUGIN_ROOT}/skills/plan-exec/references/manual-review.md` describes, stopping to ask at the slightest doubt. Then raise anything in the plan that no longer fits together, commit, and ask again.
+- **Manual review**: hand the plan over as `${CLAUDE_PLUGIN_ROOT}/skills/plan-exec/references/manual-review.md` describes, which opens it in PlanCake when that is installed. The user leaves notes with their note markers, in PlanCake or their editor. When they say they are done ("done", "go", "continue"), work through every note and edit as that file describes, stopping to ask at the slightest doubt. Then raise anything in the plan that no longer fits together, commit, and ask again.
 - **Start implementation**: invoke the `planning:plan-exec` skill with the plan path.
 - **Done**: stop here.

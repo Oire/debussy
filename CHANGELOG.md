@@ -3,6 +3,23 @@
 All notable changes to this repo are recorded here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.14.5] - 2026-10-19
+
+Plugins: planning 0.4.5, review 0.5.3, write-manual 0.5.4.
+
+### Added
+- **The file to review opens in PlanCake.** When a skill hands the user a file
+  to review by hand (plan-make's manual review of a plan, or write-manual's
+  manual when the user chooses to annotate it) and PlanCake is installed, the
+  skill opens the file there. On Windows it starts `plancake` with `start` or
+  `Start-Process`; under WSL it starts `plancake.exe` in the background with
+  the path converted by `wslpath -w`, doing what the README's `pk` function
+  does, since a non-interactive shell cannot see that function. Either way the
+  command returns at once instead of waiting for the window to close.
+  Elsewhere nothing opens. The new `openInPlanCake` setting (default `true`)
+  turns this off for users who review in their editor. The change is in the
+  shared `manual-review.md` and `settings.md`, plan-make, and write-manual.
+
 ## [0.14.4] - 2026-10-19
 
 Plugins: planning 0.4.4, write-manual 0.5.3.
