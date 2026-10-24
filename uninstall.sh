@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
-# Removes the manually-installed convention hooks from ~/.claude/hooks on
-# Linux/macOS/WSL. Deletes only the files this repo installs, by explicit name
+# Removes the manually-installed convention hooks from ~/.claude/hooks and the
+# status line from ~/.claude/statusline on Linux/macOS/WSL. Deletes only the files this repo installs, by explicit name
 # -- it will NOT touch other hooks you may keep there. Does NOT edit
 # settings.json; remove the hooks block yourself (see the printed reminder).
 #
@@ -23,7 +23,13 @@ for f in "${files[@]}"; do
   if [ -e "$hooks/$f" ]; then rm -f "$hooks/$f"; echo "  removed hooks/$f"; fi
 done
 
+statusline="$HOME/.claude/statusline"
+for f in statusline.sh statusline.ps1; do
+  if [ -e "$statusline/$f" ]; then rm -f "$statusline/$f"; echo "  removed statusline/$f"; fi
+done
+rmdir "$statusline" 2>&- || true
+
 echo
 echo "Done. Manual follow-ups:"
-echo "  - Remove the debussy hooks block from your ~/.claude/settings.json."
+echo "  - Remove the debussy hooks block and statusLine from your ~/.claude/settings.json."
 echo "  - Plugins are removed via: /plugin uninstall <name>@debussy"

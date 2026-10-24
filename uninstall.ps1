@@ -1,5 +1,5 @@
-# Removes the manually-installed convention hooks from ~/.claude/hooks on
-# Windows. Deletes only the files this repo installs, by explicit name -- it
+# Removes the manually-installed convention hooks from ~/.claude/hooks and the
+# status line from ~/.claude/statusline on Windows. Deletes only the files this repo installs, by explicit name -- it
 # will NOT touch other hooks you may keep there. Does NOT edit settings.json;
 # remove the hooks block yourself (see the printed reminder).
 #
@@ -23,7 +23,14 @@ foreach ($f in $files) {
     if (Test-Path $p) { Remove-Item -Force $p; Write-Host "  removed hooks/$f" }
 }
 
+$statusLine = Join-Path $env:USERPROFILE '.claude/statusline'
+foreach ($f in @('statusline.sh', 'statusline.ps1')) {
+    $p = Join-Path $statusLine $f
+    if (Test-Path $p) { Remove-Item -Force $p; Write-Host "  removed statusline/$f" }
+}
+if ((Test-Path $statusLine) -and -not (Get-ChildItem $statusLine)) { Remove-Item $statusLine }
+
 Write-Host ""
 Write-Host "Done. Manual follow-ups:"
-Write-Host "  - Remove the debussy hooks block from your ~/.claude/settings.json."
+Write-Host "  - Remove the debussy hooks block and statusLine from your ~/.claude/settings.json."
 Write-Host "  - Plugins are removed via: /plugin uninstall <name>@debussy"

@@ -1,0 +1,27 @@
+# Case table for the status line, read by BOTH runners' test suites
+# (tests/test-statusline.sh and tests/test-statusline.ps1), so the Bash and
+# PowerShell scripts are held to the same output for the same input.
+#
+# Tab-separated, five columns:
+#   zone      any = the output does not depend on the time zone
+#             utc = a reset time is printed; the suite runs the script in UTC,
+#                   and a runner that cannot force UTC (PowerShell on Windows)
+#                   skips the row
+#   mode      the script's argument; - means none (the default, spoken)
+#   json      what Claude Code sends the script on stdin
+#   expected  the exact line the script must print
+#   label     what the case is called in the output
+#
+# Lines starting with # are comments; #> starts a new section heading.
+
+#> compact
+any	compact	{"model":{"display_name":"Opus 5.5"},"context_window":{"used_percentage":12.5},"rate_limits":{"five_hour":{"used_percentage":1.4,"resets_at":1792818000},"seven_day":{"used_percentage":6.5,"resets_at":1793250000}}}	Opus 5.5. Ctx 13. Session 1. Week 7.	every figure, halves rounded up
+any	compact	{"model":{"display_name":"Opus 5.5"},"context_window":{"used_percentage":null}}	Opus 5.5.	fresh session shows the model alone
+any	compact	{"model":{"display_name":"Sonnet 5.5"},"context_window":{"used_percentage":42}}	Sonnet 5.5. Ctx 42.	no rate limits off a subscription
+any	compact	{"model":{"display_name":"Opus 5.5"},"context_window":{"used_percentage":0},"rate_limits":{"five_hour":{"used_percentage":0},"seven_day":{"used_percentage":99.5}}}	Opus 5.5. Ctx 0. Session 0. Week 100.	zero is shown, not dropped
+any	compact	{"context_window":{"used_percentage":3}}	Unknown model. Ctx 3.	missing model name
+
+#> spoken
+any	spoken	{"model":{"display_name":"Opus 5.5"},"context_window":{"used_percentage":12.5},"rate_limits":{"five_hour":{"used_percentage":1.4},"seven_day":{"used_percentage":6.5}}}	Opus 5.5. Context 13 percent. Session 1 percent. Week 7 percent.	no reset times known
+any	-	{"model":{"display_name":"Opus 5.5"},"context_window":{"used_percentage":12.5}}	Opus 5.5. Context 13 percent.	no argument means spoken
+utc	spoken	{"model":{"display_name":"Opus 5.5"},"context_window":{"used_percentage":12.5},"rate_limits":{"five_hour":{"used_percentage":1.4,"resets_at":1792818000},"seven_day":{"used_percentage":6.5,"resets_at":1793250000}}}	Opus 5.5. Context 13 percent. Session 1 percent, resets 05:00. Week 7 percent, resets Thursday 05:00.	reset times in local time

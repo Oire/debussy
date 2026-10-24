@@ -3,6 +3,27 @@
 All notable changes to this repo are recorded here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.16.0] - 2026-10-24
+
+### Added
+- **A status line for screen readers, on every platform.**
+  `statusline/statusline.sh` and `statusline/statusline.ps1` print the same
+  plain-text line, `Opus 5.5. Ctx 42. Session 12. Week 30.` in the compact
+  form, or a spoken form with the rate-limit reset times: labels before
+  numbers, no colors or symbols. The `.ps1` reads the JSON natively, so
+  Windows needs no `jq`, and runs under Windows PowerShell 5.1 and
+  PowerShell 7. Both are held to one shared case table in CI. A plugin can't
+  set `statusLine`, so they install by file copy: `install.*` copies them into
+  `~/.claude/statusline/`, `sync.*` and `uninstall.*` handle them too, and the
+  `settings/` snippets carry the `statusLine` entry.
+
+### Removed
+- **The status-line plugin.** Claude Code draws a plugin's status text as a
+  notice prefixed with a warning sign and the plugin's name, which a screen
+  reader announces as a warning on every update. The scripts above replace
+  it. Uninstall it with `/plugin uninstall status-line@debussy`. The CI job
+  that tested hooks-module plugins goes with it.
+
 ## [0.15.0] - 2026-10-24
 
 Plugins: status-line 0.1.0 (new).

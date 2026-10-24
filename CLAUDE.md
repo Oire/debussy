@@ -32,20 +32,21 @@ from, and ask the user which parts may be published before porting any of it.
     Codex-verify workflows).
   - `write-manual` — the manual-writing pipeline.
   - `dotnet-tools` — the .NET style corrector.
-  - `status-line` — the screen-reader status line, a hooks module
-    (`hooks/status-line.ts`) with its tests in `tests/` (`claude plugin test`).
   - `conventions` — the convention hooks (+ their `hooks/hooks.json`).
-- `settings/` — `settings.{windows,unix}.example.json` for the manual hook path.
+- `statusline/` — the screen-reader status line, `statusline.sh` (jq) and
+  `statusline.ps1` (Windows, no jq). Not a plugin: a plugin can't set
+  `statusLine`, so it installs by file copy like the manual hooks.
+- `settings/` — `settings.{windows,unix}.example.json` for the manual hook
+  and status line path.
 - `tests/` — the hook suites (`.sh` + `.ps1` per cross-platform runner), the
   shared case tables in `cases/`, and `validate-repo.py` for repo structure.
   Run them before committing; see `tests/README.md`.
 - `.github/workflows/ci.yml` — runs all of the above on Linux, macOS, and
-  Windows, plus a no-`jq` Linux run and PowerShell 5.1 on Windows, and
-  `claude plugin validate` / `claude plugin test` for hooks-module plugins.
+  Windows, plus a no-`jq` Linux run and PowerShell 5.1 on Windows.
 - `docs/` — design notes (`marketplace-plan.md`).
-- `install.* / sync.* / uninstall.*` — helpers for the manual hook path only
-  (copy `plugins/conventions/hooks` ↔ `~/.claude/hooks`). Features install via
-  `/plugin`, not these scripts.
+- `install.* / sync.* / uninstall.*` — helpers for the manual path only
+  (copy `plugins/conventions/hooks` ↔ `~/.claude/hooks` and `statusline/` ↔
+  `~/.claude/statusline`). Features install via `/plugin`, not these scripts.
 
 ## Conventions this repo enforces (on itself)
 

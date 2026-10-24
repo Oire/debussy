@@ -275,6 +275,10 @@ check(
     ", ".join(p.name for p in windows_only.glob("*.sh")),
 )
 
+statusline = ROOT / "statusline"
+for name in ("statusline.sh", "statusline.ps1"):
+    check((statusline / name).is_file(), f"statusline/{name} exists")
+
 
 # Windows PowerShell 5.1 reads a .ps1 with no BOM using the system ANSI code
 # page, so a UTF-8 character arrives as mojibake. In a comment that is merely
@@ -284,8 +288,10 @@ check(
 # parse error, which a PreToolUse hook reports as exit 1: not blocked, not
 # enforced, no visible complaint. Staying inside ASCII sidesteps the entire
 # question of how any given machine decodes the file.
-for ps1 in sorted(ROOT.glob("plugins/**/hooks/**/*.ps1")) + sorted(
-    ROOT.glob("tests/*.ps1")
+for ps1 in (
+    sorted(ROOT.glob("plugins/**/hooks/**/*.ps1"))
+    + sorted(ROOT.glob("statusline/*.ps1"))
+    + sorted(ROOT.glob("tests/*.ps1"))
 ):
     raw = ps1.read_bytes()
     offenders = sorted(

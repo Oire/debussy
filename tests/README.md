@@ -9,6 +9,7 @@ no dependencies beyond `bash`, PowerShell, and Python with PyYAML.
 ```bash
 bash tests/test-american-english.sh
 bash tests/test-git-guard.sh
+bash tests/test-statusline.sh
 python3 tests/validate-repo.py
 ```
 
@@ -16,6 +17,7 @@ python3 tests/validate-repo.py
 pwsh -NoProfile -File tests/test-git-guard.ps1
 pwsh -NoProfile -File tests/test-american-english.ps1
 pwsh -NoProfile -File tests/test-no-null-redirect.ps1
+pwsh -NoProfile -File tests/test-statusline.ps1
 ```
 
 On Windows, run the `.ps1` suites with `powershell` as well as `pwsh`. Each
@@ -31,8 +33,9 @@ that have bitten these hooks (native stderr arrives as an error record).
 | `test-american-english.{sh,ps1}` | `check-american-english`, both runners |
 | `test-git-guard.{sh,ps1}` | `check-git-guard`, both runners |
 | `test-no-null-redirect.ps1` | `check-no-null-redirect` (Windows-only, so no `.sh`) |
+| `test-statusline.{sh,ps1}` | `statusline/statusline.{sh,ps1}`, both scripts |
 | `validate-repo.py` | Manifests, component frontmatter, hook wiring, runner parity |
-| `cases/*.tsv` | Case tables shared by a hook's two suites |
+| `cases/*.tsv` | Case tables shared by a script's two suites |
 
 ## Why the case tables exist
 
@@ -65,10 +68,6 @@ tests. Same reason `cases/american-english-paths.tsv` holds only paths.
 - A Linux run with `jq` hidden, because the raw-payload fallback is the real
   path on any machine that never installed `jq`.
 - PowerShell suites on Windows (5.1 and 7) and on Linux (7).
-- On Linux and Windows, `claude plugin validate` and `claude plugin test` for
-  every plugin whose `hooks.json` loads a hooks module (today `status-line`),
-  with the latest Claude Code from npm. Both run offline with no sign-in; run
-  them locally the same way, e.g. `claude plugin test plugins/status-line`.
 - `validate-repo.py`, which checks the things prose asks for and nobody
   remembers: plugin names matching directories, marketplace entries resolving,
   skill frontmatter matching its directory, `hooks.json` pointing at files that

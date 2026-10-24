@@ -1,4 +1,8 @@
 {
+  "statusLine": {
+    "type": "command",
+    "command": "powershell -NoProfile -ExecutionPolicy Bypass -Command '& (Join-Path $HOME .claude/statusline/statusline.ps1) compact'"
+  },
   "hooks": {
     "PreToolUse": [
       {

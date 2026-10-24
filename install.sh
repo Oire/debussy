@@ -9,7 +9,8 @@
 #   /plugin install planning@debussy   (and review, write-manual, dotnet-tools)
 #
 # Copies plugins/conventions/hooks/* into ~/.claude/hooks/, preserving the
-# cross-platform/ and windows-only/ subdirectories. Does NOT touch settings.json.
+# cross-platform/ and windows-only/ subdirectories, and the status line scripts
+# into ~/.claude/statusline/. Does NOT touch settings.json.
 #
 # Usage (from the repo root):   bash install.sh
 
@@ -26,6 +27,12 @@ cp -R "$src/cross-platform" "$dest/"
 cp -R "$src/windows-only" "$dest/"
 chmod +x "$dest/cross-platform/check-american-english.sh" "$dest/cross-platform/check-git-guard.sh" 2>&- || true
 
+statusline="$HOME/.claude/statusline"
+echo "Installing the status line into $statusline"
+mkdir -p "$statusline"
+cp "$repo/statusline/statusline.sh" "$repo/statusline/statusline.ps1" "$statusline/"
+chmod +x "$statusline/statusline.sh"
+
 cat <<'EOF'
 
 Done. Next steps:
@@ -33,7 +40,9 @@ Done. Next steps:
      ~/.claude/settings.json (under hooks.PreToolUse).
      (check-no-null-redirect is Windows-only and is intentionally not wired
      on Unix.)
-  2. Restart Claude Code (or run /hooks) so the hooks load.
+  2. For the status line, add the statusLine entry from the same file to
+     ~/.claude/settings.json (it needs jq).
+  3. Restart Claude Code (or run /hooks) so the hooks load.
 
 Features (planning, review, write-manual, dotnet-tools) install via the
 marketplace: /plugin marketplace add Oire/debussy

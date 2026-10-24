@@ -5,8 +5,8 @@
 Claude. Claude Debussy. 🎹
 
 A Claude Code **plugin marketplace** from [Oire](https://oire.org): a small set
-of plugins for planning, review, documentation, .NET work, and an accessible
-status line — plus an opt-in pack of opinionated Oire coding conventions.
+of plugins for planning, review, documentation, and .NET work — plus an opt-in
+pack of opinionated Oire coding conventions and an accessible status line.
 Packaged so both humans and Claude can navigate it, and so you can install just
 the pieces you want.
 
@@ -20,9 +20,9 @@ debussy/
     review/          project-analyst (Nigel) + project-audit
     write-manual/    accessible user-manual pipeline
     dotnet-tools/    Oire .NET style corrector
-    status-line/     short plain-text status line for screen readers
     conventions/     opt-in convention hooks (American English, git-guard)
-  settings/          settings.json snippets for manual hook wiring
+  statusline/        plain-text status line for screen readers (.sh and .ps1)
+  settings/          settings.json snippets for manual hook and status line wiring
   docs/              design notes (marketplace roadmap)
   install.* sync.* uninstall.*   helpers for the manual hook path
 ```
@@ -35,7 +35,6 @@ debussy/
 | [review](#review) | project-analyst (Nigel), project-audit | `/plugin install review@debussy` |
 | [write-manual](#write-manual) | accessible user-manual pipeline | `/plugin install write-manual@debussy` |
 | [dotnet-tools](#dotnet-tools) | .NET style corrector | `/plugin install dotnet-tools@debussy` |
-| [status-line](#status-line) | short plain-text status line | `/plugin install status-line@debussy` |
 | [conventions](#conventions-opt-in) | opt-in convention hooks | `/plugin install conventions@debussy` |
 
 Add the marketplace once, then install whichever you want:
@@ -80,16 +79,6 @@ The idea-to-execution pipeline; the four components chain via the
 | Component | Trigger | Description |
 | --- | --- | --- |
 | `dotnet-style-corrector` (agent) | Task tool, or "check my C# style" | Checks C# against Oire .NET coding standards and `.editorconfig`. Stack-specific, hence its own plugin |
-
-### status-line
-
-A short status line for screen readers, such as
-`Opus 5.5. Ctx 42. Session 12. Week 30.`: the model, the context window's fill,
-and the session and weekly rate limits, labels before numbers, with no colors
-or symbols. It is a hooks module rather than a `statusLine` script, so it works
-the same on Windows, macOS, and Linux without `bash`, `jq`, or PowerShell. If
-you have a `statusLine` in `settings.json`, remove it to keep only this line.
-See [`plugins/status-line/README.md`](plugins/status-line/README.md).
 
 ### conventions (opt-in)
 
@@ -189,6 +178,22 @@ wire the cross-platform PowerShell runners while the plugin is enabled, or
 
 `sync.*` pulls in-place hook edits back into the repo; `uninstall.*` removes the
 copied hooks (by name — it never touches your other hooks).
+
+## Status line (optional)
+
+A short status line for screen readers, labels before numbers, with no colors
+or symbols:
+
+```
+Opus 5.5. Ctx 42. Session 12. Week 30.
+```
+
+`statusline.sh` needs `jq`; `statusline.ps1` is the same line for Windows,
+where PowerShell reads the JSON itself. A plugin can't set the status line, so
+it installs by file copy: `install.sh` or `install.ps1` copies both scripts
+into `~/.claude/statusline/`, and you add the `statusLine` entry from the
+matching snippet in [`settings/`](settings). Details and the spoken form are in
+[`statusline/README.md`](statusline/README.md).
 
 ## Conventions enforced here
 
