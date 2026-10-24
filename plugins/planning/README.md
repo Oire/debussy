@@ -18,6 +18,9 @@ share the `docs/plans/<number>-<task>.md` convention:
    finding, and a fixer handles what survives. A lens that fails twice is
    reported as unreviewed, never as clean. An optional Codex pass and a
    final critical-only re-check follow. It finishes by opening a pull request.
+   Codex runs with the model and reasoning effort from its own
+   `~/.codex/config.toml` (or its defaults); set `CODEX_MODEL` or
+   `CODEX_EFFORT` to override them for debussy's runs.
 
 How far the git side goes (uncommitted, commit, push, pull request) and whether
 anything mentions AI is set in `.claude/debussy.json`; see the repo README.

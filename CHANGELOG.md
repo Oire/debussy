@@ -3,6 +3,20 @@
 All notable changes to this repo are recorded here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.16.1] - 2026-10-24
+
+Plugins: planning 0.4.6, review 0.5.4.
+
+### Changed
+- **Codex uses your model and effort, not debussy's.** `run-codex.sh` in
+  plan-exec and project-audit no longer forces `gpt-5.5` at `xhigh` effort,
+  which pinned every run to an aging model and fails on models without
+  `xhigh`. Codex now takes both from `~/.codex/config.toml`, or its own
+  defaults when that sets neither. Add `model_reasoning_effort = "xhigh"` there
+  to keep the deeper reviews. `CODEX_MODEL` and `CODEX_EFFORT` still override
+  them, but only when set. The one script serves Linux, macOS, and Windows (Git
+  Bash).
+
 ## [0.16.0] - 2026-10-24
 
 ### Added

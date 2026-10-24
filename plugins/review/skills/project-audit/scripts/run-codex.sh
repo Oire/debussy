@@ -10,8 +10,9 @@
 # echo or an unquoted heredoc, which expand them at write time.
 #
 # environment:
-#   CODEX_MODEL         model to use (default gpt-5.5)
-#   CODEX_EFFORT        reasoning effort (default xhigh)
+#   CODEX_MODEL         model to use (default: whatever codex picks from its
+#                       config.toml, else its own default)
+#   CODEX_EFFORT        reasoning effort (default: likewise)
 #   CODEX_NO_OVERRIDES  set to 1 to pass no -c overrides at all, for codex
 #                       proxies and wrappers that reject them
 
@@ -26,9 +27,13 @@ prompt=$(cat "$prompt_file")
 
 args=(exec --sandbox read-only)
 if [ "${CODEX_NO_OVERRIDES:-}" != 1 ]; then
+    if [ -n "${CODEX_MODEL:-}" ]; then
+        args+=(-c "model=$CODEX_MODEL")
+    fi
+    if [ -n "${CODEX_EFFORT:-}" ]; then
+        args+=(-c "model_reasoning_effort=$CODEX_EFFORT")
+    fi
     args+=(
-        -c "model=${CODEX_MODEL:-gpt-5.5}"
-        -c "model_reasoning_effort=${CODEX_EFFORT:-xhigh}"
         -c "stream_idle_timeout_ms=3600000"
         -c "project_doc=$HOME/.claude/CLAUDE.md"
         -c "project_doc=./CLAUDE.md"

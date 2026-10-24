@@ -71,6 +71,9 @@ Set `"git": "none"` to keep the old leave-everything-uncommitted behavior.
 ```
 
 Note: `project-audit` shells out to an external `codex` CLI; install that
-separately if you want the code-level half of the audit. Opening pull requests
+separately if you want the code-level half of the audit. Codex runs with the
+model and reasoning effort from its own `~/.codex/config.toml` (or its
+defaults); set `CODEX_MODEL` or `CODEX_EFFORT` to override them for debussy's
+runs. Opening pull requests
 uses the GitHub CLI (`gh`); without it the branch is pushed and you get the
 compare URL.
