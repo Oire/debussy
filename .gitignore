@@ -15,3 +15,6 @@ nul
 # Local-only Claude Code state that must never be committed from this repo
 .credentials.json
 settings.local.json
+
+# Types Claude Code lays beside a hooks module it loads from a working copy
+plugins/*/.claude-plugin/types/

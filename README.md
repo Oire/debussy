@@ -5,9 +5,10 @@
 Claude. Claude Debussy. 🎹
 
 A Claude Code **plugin marketplace** from [Oire](https://oire.org): a small set
-of plugins for planning, review, documentation, and .NET work — plus an opt-in
-pack of opinionated Oire coding conventions. Packaged so both humans and Claude
-can navigate it, and so you can install just the pieces you want.
+of plugins for planning, review, documentation, .NET work, and an accessible
+status line — plus an opt-in pack of opinionated Oire coding conventions.
+Packaged so both humans and Claude can navigate it, and so you can install just
+the pieces you want.
 
 ## What's inside
 
@@ -19,6 +20,7 @@ debussy/
     review/          project-analyst (Nigel) + project-audit
     write-manual/    accessible user-manual pipeline
     dotnet-tools/    Oire .NET style corrector
+    status-line/     short plain-text status line for screen readers
     conventions/     opt-in convention hooks (American English, git-guard)
   settings/          settings.json snippets for manual hook wiring
   docs/              design notes (marketplace roadmap)
@@ -33,6 +35,7 @@ debussy/
 | [review](#review) | project-analyst (Nigel), project-audit | `/plugin install review@debussy` |
 | [write-manual](#write-manual) | accessible user-manual pipeline | `/plugin install write-manual@debussy` |
 | [dotnet-tools](#dotnet-tools) | .NET style corrector | `/plugin install dotnet-tools@debussy` |
+| [status-line](#status-line) | short plain-text status line | `/plugin install status-line@debussy` |
 | [conventions](#conventions-opt-in) | opt-in convention hooks | `/plugin install conventions@debussy` |
 
 Add the marketplace once, then install whichever you want:
@@ -77,6 +80,16 @@ The idea-to-execution pipeline; the four components chain via the
 | Component | Trigger | Description |
 | --- | --- | --- |
 | `dotnet-style-corrector` (agent) | Task tool, or "check my C# style" | Checks C# against Oire .NET coding standards and `.editorconfig`. Stack-specific, hence its own plugin |
+
+### status-line
+
+A short status line for screen readers, such as
+`Opus 5.5. Ctx 42. Session 12. Week 30.`: the model, the context window's fill,
+and the session and weekly rate limits, labels before numbers, with no colors
+or symbols. It is a hooks module rather than a `statusLine` script, so it works
+the same on Windows, macOS, and Linux without `bash`, `jq`, or PowerShell. If
+you have a `statusLine` in `settings.json`, remove it to keep only this line.
+See [`plugins/status-line/README.md`](plugins/status-line/README.md).
 
 ### conventions (opt-in)
 

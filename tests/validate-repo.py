@@ -181,6 +181,13 @@ for hooks_json in sorted(ROOT.glob("plugins/*/hooks/hooks.json")):
     check(True, f"{rel(hooks_json)} is valid JSON")
     plugin_dir = hooks_json.parent.parent
     referenced = 0
+    # A hooks module is a code file the engine loads, named relative to hooks.json.
+    for module in config.get("modules", []):
+        referenced += 1
+        check(
+            (hooks_json.parent / module).is_file(),
+            f"{rel(hooks_json)} -> module {module} exists",
+        )
     for matchers in config.get("hooks", {}).values():
         for matcher in matchers:
             for hook in matcher.get("hooks", []):
@@ -197,7 +204,7 @@ for hooks_json in sorted(ROOT.glob("plugins/*/hooks/hooks.json")):
                     f"{rel(hooks_json)} command uses {PLUGIN_ROOT_VAR}",
                     command,
                 )
-    check(referenced > 0, f"{rel(hooks_json)} wires at least one script")
+    check(referenced > 0, f"{rel(hooks_json)} wires at least one script or module")
 
 # Skills, commands, and agents must address in-plugin files through
 # ${CLAUDE_PLUGIN_ROOT}; a hardcoded ~/.claude path breaks on install.

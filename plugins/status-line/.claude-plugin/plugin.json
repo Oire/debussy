@@ -1,0 +1,13 @@
+{
+  "name": "status-line",
+  "version": "0.1.0",
+  "description": "A short plain-text status line for screen readers: model, context, and the session and weekly rate limits, with labels before numbers and no colors or symbols. A hooks module, so it works the same on Windows, macOS, and Linux with nothing to install.",
+  "author": {
+    "name": "André Polykanine",
+    "email": "ap@oire.me"
+  },
+  "homepage": "https://github.com/Oire/debussy",
+  "repository": "https://github.com/Oire/debussy",
+  "license": "Apache-2.0",
+  "keywords": ["status-line", "accessibility", "screen-reader", "oire"]
+}

@@ -3,6 +3,22 @@
 All notable changes to this repo are recorded here. Format loosely follows
 [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.15.0] - 2026-10-24
+
+Plugins: status-line 0.1.0 (new).
+
+### Added
+- **The status-line plugin.** A short plain-text status line for screen
+  readers: `Opus 5.5. Ctx 42. Session 12. Week 30.`, the model, the context
+  window's fill, and the five-hour and seven-day rate limits, labels before
+  numbers, with no colors or symbols. It is a hooks module, so Claude Code runs
+  it the same way on Windows, macOS, and Linux, with no `statusLine` script and
+  nothing to install. It updates when the session starts, on each prompt, and
+  whenever Claude Code measures the session. Remove any `statusLine` from
+  `settings.json` to keep only this line.
+- `validate-repo.py` checks that the code files a plugin's `hooks.json` lists
+  under `modules` exist.
+
 ## [0.14.5] - 2026-10-19
 
 Plugins: planning 0.4.5, review 0.5.3, write-manual 0.5.4.

@@ -5,8 +5,8 @@
     "email": "ap@oire.me"
   },
   "metadata": {
-    "description": "Oire Claude Code customizations — planning, review, documentation, .NET tooling, and opt-in coding-convention hooks.",
-    "version": "0.14.5"
+    "description": "Oire Claude Code customizations — planning, review, documentation, .NET tooling, an accessible status line, and opt-in coding-convention hooks.",
+    "version": "0.15.0"
   },
   "plugins": [
     {
@@ -28,6 +28,11 @@
       "name": "dotnet-tools",
       "source": "./plugins/dotnet-tools",
       "description": "Oire .NET coding-standards style corrector."
+    },
+    {
+      "name": "status-line",
+      "source": "./plugins/status-line",
+      "description": "A short plain-text status line for screen readers: model, context, and rate limits, the same on every platform."
     },
     {
       "name": "conventions",

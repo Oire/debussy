@@ -32,6 +32,8 @@ from, and ask the user which parts may be published before porting any of it.
     Codex-verify workflows).
   - `write-manual` — the manual-writing pipeline.
   - `dotnet-tools` — the .NET style corrector.
+  - `status-line` — the screen-reader status line, a hooks module
+    (`hooks/status-line.ts`) with its tests in `tests/` (`claude plugin test`).
   - `conventions` — the convention hooks (+ their `hooks/hooks.json`).
 - `settings/` — `settings.{windows,unix}.example.json` for the manual hook path.
 - `tests/` — the hook suites (`.sh` + `.ps1` per cross-platform runner), the
