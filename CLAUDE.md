@@ -40,7 +40,8 @@ from, and ask the user which parts may be published before porting any of it.
   shared case tables in `cases/`, and `validate-repo.py` for repo structure.
   Run them before committing; see `tests/README.md`.
 - `.github/workflows/ci.yml` — runs all of the above on Linux, macOS, and
-  Windows, plus a no-`jq` Linux run and PowerShell 5.1 on Windows.
+  Windows, plus a no-`jq` Linux run and PowerShell 5.1 on Windows, and
+  `claude plugin validate` / `claude plugin test` for hooks-module plugins.
 - `docs/` — design notes (`marketplace-plan.md`).
 - `install.* / sync.* / uninstall.*` — helpers for the manual hook path only
   (copy `plugins/conventions/hooks` ↔ `~/.claude/hooks`). Features install via

@@ -110,10 +110,39 @@ jobs:
           }
           if ($failed -gt 0) { exit 1 }
 
+  hooks-modules:
+    name: Hooks modules (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    steps:
+      - uses: actions/checkout@v7
+      # Unpinned on purpose: the hooks API is early access, and a release that
+      # breaks a module breaks it for everyone who installed the plugin.
+      # validate and test run offline and need no sign-in.
+      - name: Install Claude Code
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Validate and test every plugin that loads a hooks module
+        shell: bash
+        run: |
+          claude --version
+          found=0
+          for hooks in plugins/*/hooks/hooks.json; do
+            grep -q '"modules"' "$hooks" || continue
+            plugin=$(dirname "$(dirname "$hooks")")
+            found=$((found + 1))
+            echo "== $plugin =="
+            claude plugin validate "$plugin"
+            claude plugin test "$plugin"
+          done
+          [ "$found" -gt 0 ]
+
   ci:
     name: CI
     runs-on: ubuntu-latest
-    needs: [structure, shellcheck, bash-hooks, bash-hooks-without-jq, powershell-hooks]
+    needs: [structure, shellcheck, bash-hooks, bash-hooks-without-jq, powershell-hooks, hooks-modules]
     if: always()
     steps:
       # One check to require in branch protection, instead of naming every job

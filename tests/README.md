@@ -65,6 +65,10 @@ tests. Same reason `cases/american-english-paths.tsv` holds only paths.
 - A Linux run with `jq` hidden, because the raw-payload fallback is the real
   path on any machine that never installed `jq`.
 - PowerShell suites on Windows (5.1 and 7) and on Linux (7).
+- On Linux and Windows, `claude plugin validate` and `claude plugin test` for
+  every plugin whose `hooks.json` loads a hooks module (today `status-line`),
+  with the latest Claude Code from npm. Both run offline with no sign-in; run
+  them locally the same way, e.g. `claude plugin test plugins/status-line`.
 - `validate-repo.py`, which checks the things prose asks for and nobody
   remembers: plugin names matching directories, marketplace entries resolving,
   skill frontmatter matching its directory, `hooks.json` pointing at files that
